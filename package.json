@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@tago-io/sdk": "^10.10.0",
+    "ftp": "^0.3.10"
+  }
+}
