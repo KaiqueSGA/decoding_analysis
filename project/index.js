@@ -11,7 +11,7 @@
  async function mqttPushExample(context, scope) {
 
   
- }
+ };
  
  module.exports = new Analysis(mqttPushExample, { token: "YOUR-TOKEN" });
  
