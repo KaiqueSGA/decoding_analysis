@@ -10,9 +10,9 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
 
    /* this function will define the code's algorithim */
-  function Changing_algorithm(file_list, ftp_connection){
+ async function Changing_algorithm(file_list, ftp_connection){
         
-    file_list.forEach((ftp_file) => {  
+    file_list.forEach( async(ftp_file) => {  
             if(ftp_file.name.startsWith("StuMessages")){
 
                     /* module.exports = {

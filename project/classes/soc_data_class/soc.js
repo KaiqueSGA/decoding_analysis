@@ -6,29 +6,30 @@ class smart_one_c_message{
 
 
     async get_file_content(xml_file_name, ftp_connection){
-
-      let file_content = "hi";
+      let array_of_content = new Array();
+      let file_content;
       
-       ftp_connection.get(`./${xml_file_name}`, function(err, stream) {
+       await ftp_connection.get(`./${xml_file_name}`, function(err, stream) {
           
             if(err){ 
                 throw err
             }else{
-                stream.once('close', function() { ftp_connection.end(); });
+                  stream.once('close', async function() { ftp_connection.end(); });
 
-                stream.on('data', (chunk) => {
-                  file_content = file_content + chunk;console.log(file_content)
+                  stream.on('data', (chunk) => {
+                  file_content = file_content + chunk;
+                  array_of_content.push(file_content)
 
                   let there_is_content_within_of_file = file_content.includes("</payload>");
                   if(!there_is_content_within_of_file){ this.delete_file_from_ftp() };
                });     
+
             }
-
-          return "file_content";
        });
-       
 
-      
+       setTimeout( () => {console.log(array_of_content)}, 1000 )
+
+       //return array_of_content;
 
     }
 
