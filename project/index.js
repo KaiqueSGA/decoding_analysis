@@ -34,7 +34,7 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
                    const smart_one_c_message = new soc_messages();
                    let content_file = await smart_one_c_message.get_file_content(ftp_file.name, ftp_connection);
-                   console.log(content_file);
+                   console.log(content_file[0]);
                     
 
             }
@@ -85,11 +85,6 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
         connection.connect(access_config_ftp_server)
         
-        
-
-
-
-
 
     }catch(err){
         console.log(err)

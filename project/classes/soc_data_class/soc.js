@@ -1,6 +1,6 @@
 
 class smart_one_c_message{
-    contructor(hexadecimal_code){
+    constructor(hexadecimal_code){
        this.hexa_code = hexadecimal_code;
     }
 
@@ -9,25 +9,31 @@ class smart_one_c_message{
       let array_of_content = new Array();
       let file_content;
       
-       await ftp_connection.get(`./${xml_file_name}`, function(err, stream) {
+       await ftp_connection.get(`./${xml_file_name}`, async function(err, stream) {
           
             if(err){ 
                 throw err
             }else{
-                  stream.once('close', async function() { ftp_connection.end(); });
+                  stream.once('close', function() { ftp_connection.end(); });
 
-                  stream.on('data', (chunk) => {
+                 await stream.on('data', (chunk) => {
                   file_content = file_content + chunk;
-                  array_of_content.push(file_content)
+                  array_of_content.push(file_content);
 
                   let there_is_content_within_of_file = file_content.includes("</payload>");
                   if(!there_is_content_within_of_file){ this.delete_file_from_ftp() };
                });     
 
             }
+            
        });
 
-       setTimeout( () => {console.log(array_of_content)}, 1000 )
+       return new Promise((resolve, reject) => {
+         setTimeout(() => {
+            return resolve(array_of_content);
+         }, 1000)
+       })
+      
 
        //return array_of_content;
 
