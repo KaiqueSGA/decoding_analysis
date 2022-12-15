@@ -17,6 +17,7 @@ class smart_one_c_message{
                   stream.once('close', function() { ftp_connection.end(); });
 
                  await stream.on('data', (chunk) => {
+                  file_content = "";
                   file_content = file_content + chunk;
                   array_of_content.push(file_content);
 
@@ -34,18 +35,18 @@ class smart_one_c_message{
          }, 1000)
        })
       
-
-       //return array_of_content;
-
     }
 
+
     decode(hexa_code){
+
 
     }
 
     delete_file_from_ftp(xml_content, xml_name){
         
     }
+    
 
     insert_on_tago(handled_data){
         console.log('teste');
