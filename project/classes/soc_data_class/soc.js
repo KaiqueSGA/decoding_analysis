@@ -38,15 +38,61 @@ class smart_one_c_message{
     }
 
 
+
+
+
     decode(hexa_code){
 
+      function Default_Message(hexa_code){
+         console.log("default Message")
+      }
+
+      function Truncate_Message(hexa_code){
+
+      }
+
+      function type3_Message(hexa_code){//the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
+
+      }
+
+
+      hexa_code.forEach(stu_message => {//A stu message matches the each message has ent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
+         let help = stu_message.indexOf("<payload");
+         let firstTag = stu_message.indexOf(">",help);
+         let secondTag = stu_message.indexOf("</payload>",firstTag);
+         let hexa_code= stu_message.substring(firstTag + 3,secondTag);
+
+         const find_out_type_of_message = ( () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message trough of first byte.
+            let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
+            let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2));
+            let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),10);
+
+               if(bin_2_decimal === 0){
+                  Default_Message(hexa_code);
+
+               }else if(bin_2_decimal === 1){
+                  Truncate_Message(hexa_code);
+
+               }else{
+                  type3_Message(hexa_code);
+
+               }
+         } )()
+      });
 
     }
+
+
+
+
 
     delete_file_from_ftp(xml_content, xml_name){
         
     }
     
+
+
+
 
     insert_on_tago(handled_data){
         console.log('teste');
