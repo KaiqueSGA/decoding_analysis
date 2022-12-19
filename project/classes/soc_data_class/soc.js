@@ -43,13 +43,45 @@ class smart_one_c_message{
 
     decode(hexa_code){
 
-      function Default_Message(hexa_code){
-         console.log("default Message")
+      const decode_lat = (latitude_hexadecimal_format) => {
+        let hex_2_decimal = parseInt(latitude_hexadecimal_format,16); 
+
+        let degree_per_count_lat = (90.0 / Math.pow(2,23)); 
+        let latitude = hex_2_decimal * degree_per_count_lat > 90.0
+                                   ? (hex_2_decimal * degree_per_count_lat) - 180
+                                   : (hex_2_decimal * degree_per_count_lat); 
+        return latitude;
       }
+
+
+      const decode_lng = (longitude_hexadecimal_format) => {
+        let hex_2_decimal = parseInt(longitude_hexadecimal_format,16); 
+
+        let degree_per_count_long  = (180.0 / Math.pow(2,23));
+        let longitude = hex_2_decimal * degree_per_count_long > 180 
+                                    ? (hex_2_decimal * degree_per_count_long) - 360
+                                    : (hex_2_decimal * degree_per_count_long); 
+        return longitude;
+      }
+
+
+
+      function Default_Message(hexa_code){
+         let latitude_hexadecimal_format = hexa_code.substring(2,8); 
+         let longitude_hexadecimal_format = hexa_code.substring(8,14);
+
+         const latitude = decode_lat(latitude_hexadecimal_format);
+         const longitude = decode_lng(longitude_hexadecimal_format);
+         console.log(latitude, longitude)
+      }
+
+
 
       function Truncate_Message(hexa_code){
 
       }
+
+
 
       function type3_Message(hexa_code){//the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
 
@@ -65,7 +97,7 @@ class smart_one_c_message{
          const find_out_type_of_message = ( () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message trough of first byte.
             let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
             let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2));
-            let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),10);
+            let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),10);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
 
                if(bin_2_decimal === 0){
                   Default_Message(hexa_code);
@@ -78,6 +110,8 @@ class smart_one_c_message{
 
                }
          } )()
+
+
       });
 
     }
