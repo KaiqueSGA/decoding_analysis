@@ -39,3 +39,7 @@ If you don't know all funcionalities of TAGO.IO. Tt's important study some bulle
 inside of second StuMessage tag, we'll have all the datas has sent by device. We can have more than one stuMessages inside of first stuMessage tag(each stuMessage inside of first tag, matches the one different message.)
 
 
+
+
+<H1> How decode hexadecimal codes?</H1>
+

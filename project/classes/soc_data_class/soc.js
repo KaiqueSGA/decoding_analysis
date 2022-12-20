@@ -72,8 +72,57 @@ class smart_one_c_message{
 
          const latitude = decode_lat(latitude_hexadecimal_format);
          const longitude = decode_lng(longitude_hexadecimal_format);
-         console.log(latitude, longitude)
-      }
+         //console.log(latitude, longitude)
+         let object_with_datas_to_insert_on_tago = new Object();
+
+         let current_byte = "";
+         let byte_array = new Array()
+
+         for(let i= 0; i <= hexa_code.length; i++){
+            current_byte += hexa_code[i];  
+
+            if(current_byte.length === 2){
+               byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
+               let hex_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
+
+               const decode_binary_code = ( ()=> {
+                  if(byte_array.indexOf(current_byte) === 0){//here I'm decoding all the bits of first byte
+                    for(let i = 0; i < hex_2_bin.length; i++ ){
+
+                        if(i === 2 && hex_2_bin[i] === 0){
+                           object_with_datas_to_insert_on_tago.metadata.batery = "Bateria em bom estado";
+                        } else{
+                           object_with_datas_to_insert_on_tago.metadata.batery = "Subistituir Pilhas";
+                        }
+
+                        if(i === 3 && hex_2_bin[i] === 0){
+                           object_with_datas_to_insert_on_tago.metadata.valid_data_from_gps= "Dados de GPS válidos nesta mensagem";
+                        } else{
+                           object_with_datas_to_insert_on_tago.metadata.valid_data_from_gps = " Falha no GPS neste ciclo de mensagem, ignorar campos de Latitude e Longitude";
+                        }
+
+                    }
+
+                  }else if(byte_array.indexOf(current_byte) === 7){
+                    console.log(current_byte, hex_2_bin)
+
+                  }else if(byte_array.indexOf(current_byte) === 8){
+                    console.log(current_byte, hex_2_bin)
+
+                  }
+                 
+               }) ()
+
+            
+               hex_2_bin = "";
+               current_byte = "";
+            }
+         }
+
+      }  
+
+
+
 
 
 
@@ -83,10 +132,17 @@ class smart_one_c_message{
 
 
 
+
+
+
       function type3_Message(hexa_code){//the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
 
       }
 
+
+
+
+      
 
       hexa_code.forEach(stu_message => {//A stu message matches the each message has ent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
          let help = stu_message.indexOf("<payload");
@@ -120,10 +176,12 @@ class smart_one_c_message{
 
 
 
+
     delete_file_from_ftp(xml_content, xml_name){
         
     }
     
+
 
 
 
