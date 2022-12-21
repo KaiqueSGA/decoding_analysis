@@ -10,35 +10,40 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
 
    /* this function will define the code's algorithim */
- async function Changing_algorithm(file_list, ftp_connection){
+ async function Changing_algorithm(file_list, ftp_connection, account_tago){
         
-    file_list.forEach( async(ftp_file) => {  
-            if(ftp_file.name.startsWith("StuMessages")){
+    const smart_one_c_message = new soc_messages();
+    const cacth_esn = (data) =>{
+        let help = data.indexOf("<esn>");
+        let firstTag = data.indexOf(">",help);
+        let secondTag = data.indexOf("</esn>",firstTag);
+        return data.substring(firstTag + 1,secondTag)
+    };
+      
+       
 
-                    /* module.exports = {
-                        account:account,
-                        ftpConnect:c
-                    };
+        for await(let ftp_file of file_list){
+            let file_content = await smart_one_c_message.get_file_content(ftp_file.name,ftp_connection); 
+            let esn_value = cacth_esn(file_content[0]); 
 
-                    xmlFuncs(item.name); */
+               let filter = { tags:[ {key:"ESN", value:esn_value} ]}
+               let device = await account_tago.devices.list({
+                 page: 1,
+                 filter,
+               })
+               
 
-            }else if(ftp_file.name.startsWith("ProvisionMessages")){
+               if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
+                 let decoded_code = smart_one_c_message.decode(file_content)
 
-                   /*  module.exports = {
-                        ftpConnect:c
-                    };
+               }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
 
-                    provFuncs.completeAlgorithim(item.name); */
 
-            }else if(ftp_file.name.startsWith("SOC")){
-
-                const smart_one_c_message = new soc_messages();
-                let content_file = await smart_one_c_message.get_file_content(ftp_file.name, ftp_connection);
-                let decoded_code = smart_one_c_message.decode(content_file);  
-                
-            }
-            
-        })//end of for
+               }else{
+                 //provision algorithim
+               }
+               
+        }
 
 
     }//end of function
@@ -75,7 +80,7 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
                     }else{
                         console.log('reading files...')
-                        Changing_algorithm(file_list,connection)
+                        Changing_algorithm(file_list,connection,account)
                     }
             
             })//end of function connection.list

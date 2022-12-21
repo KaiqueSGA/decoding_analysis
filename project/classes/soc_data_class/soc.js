@@ -14,7 +14,7 @@ class smart_one_c_message{
             if(err){ 
                 throw err
             }else{
-                  stream.once('close', function() { ftp_connection.end(); });
+                  stream.once('close', function() {});
 
                  await stream.on('data', (chunk) => {
                   file_content = "";
@@ -32,7 +32,7 @@ class smart_one_c_message{
        return new Promise((resolve, reject) => {
          setTimeout(() => {
             return resolve(array_of_content);
-         }, 1000)
+         }, 2000)
        })
       
     }
@@ -66,14 +66,18 @@ class smart_one_c_message{
 
 
 
+
+
+
+
       function Default_Message(hexa_code){
          let latitude_hexadecimal_format = hexa_code.substring(2,8); 
          let longitude_hexadecimal_format = hexa_code.substring(8,14);
 
          const latitude = decode_lat(latitude_hexadecimal_format);
          const longitude = decode_lng(longitude_hexadecimal_format);
-         //console.log(latitude, longitude)
-         let object_with_datas_to_insert_on_tago = new Object();
+         
+         let object_with_datas_to_insert_on_tago = { metadata:{} };
 
          let current_byte = "";
          let byte_array = new Array()
@@ -84,42 +88,66 @@ class smart_one_c_message{
             if(current_byte.length === 2){
                byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
                let hex_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
+              
+               
+                const decode_binary_code = ( ()=> {
 
-               const decode_binary_code = ( ()=> {
                   if(byte_array.indexOf(current_byte) === 0){//here I'm decoding all the bits of first byte
                     for(let i = 0; i < hex_2_bin.length; i++ ){
 
-                        if(i === 2 && hex_2_bin[i] === 0){
-                           object_with_datas_to_insert_on_tago.metadata.batery = "Bateria em bom estado";
+                        if(i === 2 && hex_2_bin[i] === 0){//the variable i matches the position of bit
+                           object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Bateria em bom estado";
                         } else{
-                           object_with_datas_to_insert_on_tago.metadata.batery = "Subistituir Pilhas";
+                           object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Subistituir Pilhas";
                         }
 
                         if(i === 3 && hex_2_bin[i] === 0){
-                           object_with_datas_to_insert_on_tago.metadata.valid_data_from_gps= "Dados de GPS válidos nesta mensagem";
+                           object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"]= "Dados de GPS válidos nesta mensagem";
                         } else{
-                           object_with_datas_to_insert_on_tago.metadata.valid_data_from_gps = " Falha no GPS neste ciclo de mensagem, ignorar campos de Latitude e Longitude";
+                           object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"] = " Falha no GPS neste ciclo de mensagem, ignorar campos de Latitude e Longitude";
                         }
+
+                        if(i === 4 && hex_2_bin[i] === 1){
+                           object_with_datas_to_insert_on_tago["metadata"]["missed_input_1"]= true;
+                        } else{}
+
+                        if(i === 5 && hex_2_bin[i] === 1){
+                           object_with_datas_to_insert_on_tago["metadata"]["missed_input_2"] = true;
+                        } else{}
+
+                        if(i === 7){
+                           let binary_code = hex_2_bin[6] + hex_2_bin[7];
+                           let bin_2_decimal = parseInt(binary_code,2);
+                           
+                           object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal;
+                        } else{}
 
                     }
 
-                  }else if(byte_array.indexOf(current_byte) === 7){
+
+                  }else if(byte_array.indexOf(current_byte) === 7){//here i'm decodinf the bist of byte of position 7
                     console.log(current_byte, hex_2_bin)
 
-                  }else if(byte_array.indexOf(current_byte) === 8){
+                  }else if(byte_array.indexOf(current_byte) === 8){//here i'm decodinf the bist of byte of position  8
                     console.log(current_byte, hex_2_bin)
 
                   }
                  
-               }) ()
+               }) () //end of function 
 
             
+
                hex_2_bin = "";
                current_byte = "";
             }
-         }
+         } //end of for
+
+
+
+
 
       }  
+
 
 
 
@@ -135,16 +163,18 @@ class smart_one_c_message{
 
 
 
+
       function type3_Message(hexa_code){//the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
 
       }
 
+      
 
 
 
       
 
-      hexa_code.forEach(stu_message => {//A stu message matches the each message has ent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
+      hexa_code.forEach(stu_message => {//A stu message matches the each message has sent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
          let help = stu_message.indexOf("<payload");
          let firstTag = stu_message.indexOf(">",help);
          let secondTag = stu_message.indexOf("</payload>",firstTag);
@@ -153,9 +183,9 @@ class smart_one_c_message{
          const find_out_type_of_message = ( () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message trough of first byte.
             let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
             let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2));
-            let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),10);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
-
-               if(bin_2_decimal === 0){
+            let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
+                
+                if(bin_2_decimal === 0){
                   Default_Message(hexa_code);
 
                }else if(bin_2_decimal === 1){
@@ -164,11 +194,11 @@ class smart_one_c_message{
                }else{
                   type3_Message(hexa_code);
 
-               }
+               } 
          } )()
 
 
-      });
+      });//end of foreach
 
     }
 
