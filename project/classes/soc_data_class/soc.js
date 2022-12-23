@@ -41,6 +41,7 @@ class smart_one_c_message{
 
 
 
+
     decode(hexa_code){
 
       const decode_lat = (latitude_hexadecimal_format) => {
@@ -97,17 +98,20 @@ class smart_one_c_message{
 
                         if(i === 2 && hex_2_bin[i] === 0){//the variable i matches the position of bit
                            object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Bateria em bom estado";
-                        } else{
+                        } 
+                        else if(i === 2 && hex_2_bin[i] === 1){
                            object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Subistituir Pilhas";
                         }
 
-                        if(i === 3 && hex_2_bin[i] === 0){
-                           object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"]= "Dados de GPS válidos nesta mensagem";
-                        } else{
+                        else if(i === 3 && hex_2_bin[i] === 0){
+                           object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"] = "Dados de GPS válidos nesta mensagem";
+                        }
+                        
+                        else if(i === 3 && hex_2_bin[i] === 1){
                            object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"] = " Falha no GPS neste ciclo de mensagem, ignorar campos de Latitude e Longitude";
                         }
 
-                        if(i === 4 && hex_2_bin[i] === 1){
+                        else if(i === 4 && hex_2_bin[i] === 1){
                            object_with_datas_to_insert_on_tago["metadata"]["missed_input_1"]= true;
                         } else{}
 
@@ -125,10 +129,18 @@ class smart_one_c_message{
                     }
 
 
-                  }else if(byte_array.indexOf(current_byte) === 7){//here i'm decodinf the bist of byte of position 7
-                    console.log(current_byte, hex_2_bin)
+                  }else if(byte_array.indexOf(current_byte) === 7){//here i'm decoding the bits of byte of position 7
+                    for(let i = 0; 1 < hex_2_bin.length; i++){
+                       
+                     if(i === 0 && hex_2_bin[i] === 0){
+                        object_with_datas_to_insert_on_tago["metadata"]["input_changes_1"] = "message didn't trigger";
+                     }else{ 
+                        object_with_datas_to_insert_on_tago["metadata"]["input_changes_1"] = "triggered message";
+                     }
 
-                  }else if(byte_array.indexOf(current_byte) === 8){//here i'm decodinf the bist of byte of position  8
+                    }
+
+                  }else if(byte_array.indexOf(current_byte) === 8){//here i'm decoding the bist of byte of position  8
                     console.log(current_byte, hex_2_bin)
 
                   }
