@@ -105,7 +105,11 @@ class smart_one_c_message{
 
 
       function Default_Message(hexa_code){console.log(hexa_code)
-         let latitude_hexadecimal_format = hexa_code.substring(2,8); 
+        let value_of_each_bit = { 
+         "002":"batery/Good Batery", "012":"batery/replace battery",   "003":"gps_data/GPS Data valid","013":"gps_data/GPS Data wrong",   "014":"Missed_input1/true","015":"Missed-input2/true",   "007":"","017":"",   "006":"","016":"",   "700":"Input1_change/Did not trigger message","710":"Input1_change/Triggered message",   "701":"Input1_state/closed","711":"Input1_state/open",   "702":"Input2_change/Did not trigger message","712":"Input2_change/Triggered message",   "703":"Input2_state/closed","713":"Input2_state/open",   "704":"","714":"","705":"","715":"","706":"","716":"","707":"","717":"",    "803":"vibration_state_changed/This message is being transmitted for a reason other than the above reasons","813":"vibration_state_changed/vibration just changed state",   "804":"vibration/Unit is not in a state of vibration","814":"vibration/Unit is in a state of vibration",   "805":"type_location/GPS data reported is from a 3D fix","815":"type_location/GPS data reported is from a 2D fix",   "806":"in_motion/false",   "816":"in_motion/true",   "807":"gps_accuracy/High confidence in GPS fix accuracy","817":"gps_accuracy/Reduced confidence in GPS fix accuracy"
+         }
+         let latitude_h
+         exadecimal_format = hexa_code.substring(2,8); 
          let longitude_hexadecimal_format = hexa_code.substring(8,14);
 
          const latitude = decode_lat(latitude_hexadecimal_format);
