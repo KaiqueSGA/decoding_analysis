@@ -74,11 +74,11 @@ class smart_one_c_message{
          return stu_message.substring(firstTag + 3,secondTag);
       }
 
-
-      file_content.forEach(stu_message => {//A stu message(inside os a xml file i can have more than one stu_message) matches the each message has sent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
+      let ret;
+      file_content.forEach(stu_message => {//A stu message(inside of a xml file i can have more than one stu_message) matches the each message has sent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
          let hexa_code = get_hexa_code_from_ftp_file(stu_message);
 
-         const find_out_type_of_message = ( () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message through of first byte.
+         const find_out_type_of_message = () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message through of first byte.
             let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
             let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2));
             let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
@@ -93,23 +93,23 @@ class smart_one_c_message{
                  return type3_Message(hexa_code);
 
                } 
-         } )()
+         }
 
+         ret = find_out_type_of_message();
 
       });//end of foreach
 
 
+    return ret;
 
 
 
-
-
-      function Default_Message(hexa_code){console.log(hexa_code)
+      function Default_Message(hexa_code){
         let value_of_each_bit = { 
-         "002":"batery/Good Batery", "012":"batery/replace battery",   "003":"gps_data/GPS Data valid","013":"gps_data/GPS Data wrong",   "014":"Missed_input1/true","015":"Missed-input2/true",   "007":"","017":"",   "006":"","016":"",   "700":"Input1_change/Did not trigger message","710":"Input1_change/Triggered message",   "701":"Input1_state/closed","711":"Input1_state/open",   "702":"Input2_change/Did not trigger message","712":"Input2_change/Triggered message",   "703":"Input2_state/closed","713":"Input2_state/open",   "704":"","714":"","705":"","715":"","706":"","716":"","707":"","717":"",    "803":"vibration_state_changed/This message is being transmitted for a reason other than the above reasons","813":"vibration_state_changed/vibration just changed state",   "804":"vibration/Unit is not in a state of vibration","814":"vibration/Unit is in a state of vibration",   "805":"type_location/GPS data reported is from a 3D fix","815":"type_location/GPS data reported is from a 2D fix",   "806":"in_motion/false",   "816":"in_motion/true",   "807":"gps_accuracy/High confidence in GPS fix accuracy","817":"gps_accuracy/Reduced confidence in GPS fix accuracy"
+         "002":{batery:"Good Batery"}, "012":{batery:"replace batery"},    "003":{gps_data:"GPS Data valid"},"013":{gps_data:"GPS Data wrong"},    "014":{missed_input1:true},"015":{missed_input2:true},   "007":"","017":"",   "006":"","016":"",   "700":{input1_change:"Did not trigger message"},"710":{input1_change:"Triggered message"},   "701":{input1_state:"closed"},"711":{input1_state:"open"},   "702":{input2_change:"Did not trigger message"},"712":{input2_change:"Triggered message"},   "703":{Input2_state:"closed"},"713":{Input2_state:"open"},   "704":"","714":"","705":"","715":"","706":"","716":"","707":"","717":"",    "803":{vibration_state_changed:"This message is being transmitted for a reason other than the above reasons"},"813":{vibration_state_changed:"vibration just changed state"},   "804":{vibration_Unit:"is not in a state of vibration"},"814":{vibration_Unit:"Unit is in a state of vibration"},   "805":{type_location:"GPS data reported is from a 3D fix"},"815":{type_location:"GPS data reported is from a 2D fix"},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:"High confidence in GPS fix accuracy"},"817":{gps_accuracy:"Reduced confidence in GPS fix accuracy"}
          }
-         let latitude_h
-         exadecimal_format = hexa_code.substring(2,8); 
+
+         let latitude_hexadecimal_format = hexa_code.substring(2,8); 
          let longitude_hexadecimal_format = hexa_code.substring(8,14);
 
          const latitude = decode_lat(latitude_hexadecimal_format);
@@ -130,142 +130,26 @@ class smart_one_c_message{
             
                 const decode_binary_code = ( ()=> {
 
-                  if(byte_array.indexOf(current_byte) === 0){//here I'm decoding all the bits of first byte
                      for(let i = 0; i < hex_2_bin.length; i++ ){
+                       let values = `${byte_array.indexOf(current_byte)}${hex_2_bin[i]}${i}`;
+     
+                       values === ("000" || "001") 
+                                              ? ''
+                                              : ( () => {
+                                                let bit_value = value_of_each_bit[values];
 
-                           if(i == 2 && hex_2_bin[i] == 0){//the variable i matches the position of bit
-                              object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Bateria em bom estado";
-                           } 
-                           else if(i == 2 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["batery"] = "Subistituir Pilhas";
-                           }
+                                                if(bit_value !== undefined){
+                                                  Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);;                              
+                                                  }
 
-
-
-
-                           else if(i == 3 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"] = "Dados de GPS válidos nesta mensagem";
-                           }
-                           else if(i == 3 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["valid_data_from_gps"] = " Falha no GPS neste ciclo de mensagem, ignorar campos de Latitude e Longitude";
-                           }
+                                              } )()
 
 
-
-                           else if(i == 4 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["missed_input_1"]= true;
-                           } 
-
-
-
-                           else if(i == 5 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["missed_input_2"] = true;
-                           } 
-
-
-
-                           else if(i == 7){
-                              let binary_code = hex_2_bin[6] + hex_2_bin[7];
-                              let bin_2_decimal = parseInt(binary_code,2);
-                              
-                              object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal;
-                           } 
+                       values = ""; 
 
                      }
-                   
-
-                  }else if(byte_array.indexOf(current_byte) === 7){//here i'm decoding the bits of byte of position 7
-                     for(let i = 0; i < hex_2_bin.length; i++){
-                        
-                           if(i == 0 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["input1_change"] = "message didn't trigger";
-                           }
-                           else if(i == 0 && hex_2_bin[i] == 1){ 
-                              object_with_datas_to_insert_on_tago["metadata"]["input1_change"] = "triggered message";
-                           }
-
-
-
-                           else if(i == 1 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["input1_state"] = "closed";
-                           }
-                           else if(i == 1 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["input1_state"] = "open";
-                           }
-
-
-                           
-                           else if(i == 2 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["input2_change"] = "didn't trigger";
-                           }
-                           else if(i == 2 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["input2_change"] = "triggered message";
-                           }
-
-
-
-                           else if(i == 3 && hex_2_bin == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["input2_state"] = "closed";
-                           }
-                           else if(i == 3 && hex_2_bin == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["input2_state"] = "open";
-                           }
-
-                           
-                     }
-
-                     
-                  } else if(byte_array.indexOf(current_byte) == 8){//here i'm decoding the bits of byte of position  8
-                       for(let i = 0; i < hex_2_bin.length; i++){
-
-                           if(i == 3 && hex_2_bin[i] == 0){
-                              //speak with celio about this field.
-                           }
-                           else if(i == 3 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["vibration_state_changed"] = true;
-                           }
-
-
-
-                           else if(i == 4 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["vibration"] = false;
-                           }
-                           else if(i == 4 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["vibration"] = true;
-                           }
-
-
-
-                           else if(i == 5 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["type_location"] = "3D";
-                           }
-                           else if(i == 5 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["type_location"] = "2D";
-                           }
-
-
-
-                           else if(i == 6 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["in_motion"] = false;
-                           }
-                           else if(i == 6 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["in_motion"] = true;
-                           }
-
-
-
-                           else if(i == 7 && hex_2_bin[i] == 0){
-                              object_with_datas_to_insert_on_tago["metadata"]["in_motion"] = false;
-                           }
-                           else if(i == 7 && hex_2_bin[i] == 1){
-                              object_with_datas_to_insert_on_tago["metadata"]["in_motion"] = true;
-                           }
-
-                     }
-
-                  } 
                  
-               }) () //end of function 
+               }) () 
 
             
 
@@ -274,7 +158,8 @@ class smart_one_c_message{
             } 
          } //end of for 
         
-        console.log(object_with_datas_to_insert_on_tago, " ", " ");
+         
+        return object_with_datas_to_insert_on_tago;
       }  
 
 

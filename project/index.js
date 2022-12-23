@@ -87,7 +87,7 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
                if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
                  let decoded_code = smart_one_c_message.decode(file_content);
-                 //console.log(decoded_code)
+                 console.log(decoded_code)
 
                }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
 
