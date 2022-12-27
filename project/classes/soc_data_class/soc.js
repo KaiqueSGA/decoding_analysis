@@ -10,7 +10,6 @@ class smart_one_c_message{
 
 
     async get_file_content(xml_file_name, ftp_connection){
-      let array_of_content = new Array();
       let file_content;
       
        await ftp_connection.get(`./${xml_file_name}`, async function(err, stream) {
@@ -23,7 +22,6 @@ class smart_one_c_message{
                  await stream.on('data', (chunk) => {
                   file_content = "";
                   file_content = file_content + chunk;
-                  array_of_content.push(file_content);
 
                   if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
                });     
@@ -34,11 +32,17 @@ class smart_one_c_message{
 
        return new Promise((resolve, reject) => {
          setTimeout(() => {
-            return resolve(array_of_content);
-         }, 2000)
+            let stu_messages = file_content.split("</stuMessage>");
+            stu_messages.pop()
+            return resolve(stu_messages);
+         }, 2000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
        })
       
     }
+
+
+
+
 
 
 
@@ -166,11 +170,9 @@ class smart_one_c_message{
 
 
 
-
-
-      let ret;
-      file_content.forEach(stu_message => {//A stu message(inside of a xml file i can have more than one stu_message) matches the each message has sent of device that is inside of my xml file. /FOR MORE INFORMATION ABOU THE XML FILE, ACCESS OUR README/
-         let hexa_code = get_hexa_code_from_ftp_file(stu_message);
+      
+     
+         let hexa_code = get_hexa_code_from_ftp_file(file_content);
 
          const find_out_type_of_message = () => {//The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message, StoreCount Message, we can know the typeof message through of first byte.
             let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
@@ -189,12 +191,7 @@ class smart_one_c_message{
                } 
          }
 
-         ret = find_out_type_of_message();
-
-      });//end of foreach
-
-
-    return ret;
+         return find_out_type_of_message();
 
     }
 

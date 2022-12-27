@@ -4,7 +4,6 @@
 //Purpose of this file: This file it's responsible per get the FTP server and send the files of server to the right algorithim. Each type of message of server(two types), needs of an algorithim specific
 
 const { Analysis,Account, Utils, Services } = require("@tago-io/sdk");
-const { default: ConsoleService } = require("@tago-io/sdk/out/modules/Services/Console.js");
 const Ftp_server = require("ftp");
 const soc_messages = require('./classes/soc_data_class/soc.js');
 
@@ -61,7 +60,7 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
 
 
 
- async function Changing_algorithm(file_list, ftp_connection, account_tago){//if the xml file store only messages of a unique device, this algorithim is ready. If a xml file can store messages of many differents devices, i need to change my algorithim.
+ async function Changing_algorithm(file_list, ftp_connection, account_tago){
         const smart_one_c_message = new soc_messages();//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
         const cacth_esn = (data) =>{//what is ESN? Read in our README.
             let help = data.indexOf("<esn>");
@@ -69,38 +68,43 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
             let secondTag = data.indexOf("</esn>",firstTag);
             return data.substring(firstTag + 1,secondTag)
         };
-          
            
     
             for await(let ftp_file of file_list){
                 try{
-                    let file_content = await smart_one_c_message.get_file_content(ftp_file.name,ftp_connection); 
-                    let esn_value = cacth_esn(file_content[0]); // if my device could send more than one  message i need too fix this algorithim. here, i'm always catching the content of position 0 because at first a xml file can't has more than one message.
+                    let file_content = await smart_one_c_message.get_file_content(ftp_file.name,ftp_connection); console.log(file_content)
+
+
+                    file_content.forEach( async(stu_message) => {
+                        let esn_value = cacth_esn(stu_message); 
         
-                    //I need to add a looping here to catch the esn od each stu message
-                       let filter = { tags:[ {key:"ESN", value:esn_value} ]}
-                       let device = await account_tago.devices.list({
-                         page: 1,
-                         filter,
-                       })
-                       
-        
-                       if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
-                         let decoded_code = smart_one_c_message.decode(file_content);
-                         console.log(ftp_file.name);
-                         console.log(file_content);
-                         console.log(decoded_code);
-                         console.log(" ");
-                         console.log(" ");
-        
-                       }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
-        
-        
-                       }else{
-                         //provision algorithim
-                       }
+                        
+                           let filter = { tags:[ {key:"ESN", value:esn_value} ]}
+                           let device = await account_tago.devices.list({
+                             page: 1,
+                             filter,
+                           })
+                           
+            
+                           if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
+                             let decoded_code = smart_one_c_message.decode(stu_message);
+                             /* console.log(stu_message)
+                             console.log(ftp_file.name);
+                             console.log(decoded_code); */
+                             console.log(" ");
+                             console.log(" ");
+            
+                           }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
+            
+            
+                           }else{
+                             //provision algorithim
+                           }
+                    });
+
+                   
                 }catch(err){
-                  console.log(`Something went wrong  in the file${ftp_file.name}...`);continue
+                  console.log(`Something went wrong  in the file${ftp_file.name}...`, err);continue
                 }
                 
                    
