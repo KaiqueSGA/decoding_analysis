@@ -4,39 +4,38 @@
 
 
 class smart_one_c_message{
-    constructor(hexadecimal_code){
-       this.hexa_code = hexadecimal_code;
-    }
-
 
     async get_file_content(xml_file_name, ftp_connection){
-      let file_content;
-      
-       await ftp_connection.get(`./${xml_file_name}`, async function(err, stream) {
-          
-            if(err){ 
-                throw err
-            }else{
+        let file_content;
+        
+        await ftp_connection.get(`./${xml_file_name}`, async function(err, stream) {
+            
+              if(err){ 
+                  throw err
+              }else{
                   stream.once('close', function() {});
 
-                 await stream.on('data', (chunk) => {
-                  file_content = "";
-                  file_content = file_content + chunk;
+                  await stream.on('data', (chunk) => {
+                    file_content = "";
+                    file_content = file_content + chunk;
 
-                  if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
-               });     
+                    if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
+                });     
 
-            }
-            
-       });
+              }
+              
+        });
 
-       return new Promise((resolve, reject) => {
-         setTimeout(() => {
-            let stu_messages = file_content.split("</stuMessage>");
-            stu_messages.pop()
-            return resolve(stu_messages);
-         }, 2000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
-       })
+
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+              this.file_content = file_content;
+              let stu_messages = file_content.split("</stuMessage>");
+              stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
+              return resolve(stu_messages);
+          }, 1000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+        })
+        
       
     }
 
@@ -49,7 +48,7 @@ class smart_one_c_message{
 
 
 
-     decode(file_content){
+     decode(file_content, esn_value){
 
         const decode_lat = (latitude_hexadecimal_format) => {
           let hex_2_decimal = parseInt(latitude_hexadecimal_format,16); 
@@ -90,7 +89,7 @@ class smart_one_c_message{
          const longitude = decode_lng(longitude_hexadecimal_format);
          
 
-         let object_with_datas_to_insert_on_tago = { coordinates:[latitude,longitude], metadata:{} }; //this object will be filled during of decoding of bits of each byte
+         let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
          let current_byte = "";
          let byte_array = new Array()
 
@@ -202,8 +201,33 @@ class smart_one_c_message{
 
 
 
-    delete_file_from_ftp(xml_content, xml_name){
+    async delete_file_from_ftp(xml_file_name, ftp_connection){
+   
+       let resp = await ftp_connection.put(this.file_content,`./Battery Bank Test/${xml_file_name}`, function(err){
+        if(err){
+          return err;
+        }
+        else{
+            ftp_connection.delete(`./${xml_file_name}`,function(err){
+                  if(err){
+                    return err;
+                  }
+                  else{
+                    return "deleted";
+                  }
+              })
+          }
+    
+        })
         
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+              return resolve(resp);
+          }, 2000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+        })
+        
+
+       
     }
     
 
@@ -213,8 +237,10 @@ class smart_one_c_message{
 
 
 
-    insert_on_tago(handled_data){
-        console.log('teste');
+    async insert_on_tago(decoded_code, account_tago, Device, device_id){
+      let device_token = (await account_tago.devices.paramList(device_id)).find(parameter => parameter.key === "device_token").value;
+      const tago_device = new Device({ token: device_token });
+      return  await tago_device.sendData(decoded_code);
     }
  }
 

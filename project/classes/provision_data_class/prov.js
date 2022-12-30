@@ -1,9 +1,5 @@
 
 class provision_message{
-    contructor(hexadecimal_code){
-        this.hexa_code = hexadecimal_code;
-     }
-
 
      decode(hexa_code){
 
