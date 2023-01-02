@@ -5,7 +5,7 @@
 
 const { Analysis,Account, Utils, Services, Device } = require("@tago-io/sdk");
 const Ftp_server = require("ftp");
-const soc_messages = require('./classes/soc_data_class/soc.js');
+const soc_messages = require('./classes/soc.js');
 
 
 
@@ -73,9 +73,9 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
             return data.substring(firstTag + 1,secondTag)
         };
            
-          console.log(file_list.length)
+        
             for await(let ftp_file of file_list){
-                try{
+                try{console.log(" ");console.log("another file")
                     const smart_one_c_message = new soc_messages();//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
                     let file_content = await smart_one_c_message.get_file_content(ftp_file.name,ftp_connection); //this function retruns an array with all messages that are inside of xml file
                    
@@ -92,9 +92,9 @@ const soc_messages = require('./classes/soc_data_class/soc.js');
                          
           
                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
-                           let decoded_code = smart_one_c_message.decode(stu_message, esn_value);console.log(decoded_code);
+                           let decoded_code = smart_one_c_message.decode(stu_message, esn_value);
                            console.log(await smart_one_c_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id));
-                           console.log(await smart_one_c_message.delete_file_from_ftp(ftp_file.name, ftp_connection));  //fix bug. The function isn't returning nothing but it is working
+                           await smart_one_c_message.delete_file_from_ftp(ftp_file.name, ftp_connection);  //fix bug. The function isn't returning nothing but it is working
                           
                            
                          }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
