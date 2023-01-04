@@ -1,3 +1,5 @@
+const axios = require('axios');
+ 
  class ftp_and_tago_function{
     xml_file_name;
     ftp_connection;
@@ -33,11 +35,11 @@
 
         return new Promise((resolve, reject) => {
           setTimeout(() => {
-              this.file_content = file_content;console.log(file_content)
+              this.file_content = file_content;//console.log(file_content)
               let stu_messages = file_content.split("</stuMessage>");
               stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
               return resolve(stu_messages);
-          }, 4000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+          }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
         })
         
       
@@ -68,7 +70,7 @@
          return new Promise((resolve, reject) => {
            setTimeout(() => {
                return resolve(resp);
-           }, 4000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+           }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
          })
          
  
@@ -82,17 +84,29 @@
 
      async insert_on_tago(decoded_code, account_tago, Device, device_id){//public method
         let device_token = (await account_tago.devices.paramList(device_id)).find(parameter => parameter.key === "device_token").value;
-        this.add_google_link(decoded_code);
         const tago_device = new Device({ token: device_token });
+        this.add_google_link(decoded_code);
+        await this.add_google_address(decoded_code);
+
         return  console.log(await tago_device.sendData(decoded_code));
       }
  
 
 
       add_google_link(decoded_code){//private method
-       console.log(decoded_code.metadata.link = `https://www.google.com/maps/search/?api=1&query=${decoded_code.location[0]},${decoded_code.location[1]}`);
+       decoded_code.metadata.link = `https://www.google.com/maps/search/?api=1&query=${decoded_code.location.coordinates[1]},${decoded_code.location.coordinates[0]}`;
       }
 
+
+
+      async add_google_address(decoded_code){//private method
+        const request = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${decoded_code.location.coordinates[1]}&lon=${decoded_code.location.coordinates[0]}`);
+        let address = request.data.address;
+
+        return address.quarter === undefined
+                            ? decoded_code.metadata.address = `${address.road} - ${address.suburb} - ${address.state} - ${address.city} - ${address.postcode}`
+                            : decoded_code.metadata.address = `${address.road} - ${address.quarter} - ${address.state} - ${address.city} - ${address.postcode}`;
+      }
 }
 
 

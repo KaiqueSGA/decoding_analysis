@@ -17,8 +17,8 @@ class smart_one_c_message extends ftp_and_tago_function {
 
       //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
       let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
-      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2));
-      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
+      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
+      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);console.log(bin_2_decimal)//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
                   
       if(bin_2_decimal === 0){
          return this.Decode_default_message(hexa_code,  esn_value);
@@ -60,7 +60,7 @@ class smart_one_c_message extends ftp_and_tago_function {
               const decode_binary_code = ( ()=> {
 
                   for(let i = 0; i < current_byte_2_bin.length; i++ ){
-                    let values = ` ${byte_array.indexOf(current_byte)}  ${current_byte_2_bin[i]}  ${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
+                    let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
   
                     values === ("000" || "001") 
                                             ? ''
@@ -100,7 +100,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
      Decode_truncate_message(hexa_code){//private method
-
+      
     }
 
 
@@ -113,6 +113,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code){//private method
+    console.log("TRIGGERED")
      //the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
     }
 
