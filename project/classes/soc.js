@@ -1,6 +1,7 @@
 //Dev: Kaique YUdji
 //Date:27/12/2022
 //Code description: In this file, i'm decoding the xml files storaged per the ftp server. The code that I created is first creating all function and after call them
+const { default: ConsoleService } = require("@tago-io/sdk/out/modules/Services/Console");
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
 
 class smart_one_c_message extends ftp_and_tago_function {
@@ -18,7 +19,7 @@ class smart_one_c_message extends ftp_and_tago_function {
       //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
       let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
       let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
-      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);console.log(bin_2_decimal)//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
+      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
                   
       if(bin_2_decimal === 0){
          return this.Decode_default_message(hexa_code,  esn_value);
@@ -37,11 +38,8 @@ class smart_one_c_message extends ftp_and_tago_function {
 
      Decode_default_message(hexa_code, esn_value){//private method
 
-      let latitude_hexadecimal_format = hexa_code.substring(2,8); 
-      let longitude_hexadecimal_format = hexa_code.substring(8,14);
-
-      const latitude = this.decode_lat(latitude_hexadecimal_format);
-      const longitude = this.decode_lng(longitude_hexadecimal_format);
+      const latitude = this.decode_lat(hexa_code.substring(2,8));
+      const longitude = this.decode_lng(hexa_code.substring(8,14));
       
 
       let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
@@ -113,7 +111,27 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code){//private method
-    console.log("TRIGGERED")
+     const message_subtype = (() => {console.log(hexa_code)
+      let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
+      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8);
+      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);console.log(bin_2_decimal)// se este decimal for igual a 3, vou ignorar o código que está commitado abaixo. o código abaixo obtem o valor do subtipo da mensagem.
+
+      /* let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
+      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8)
+      let bin_2_decimal = parseInt(hex_2_bin.substring(2,8),2); console.log(hexa_code); */
+     })() 
+
+
+
+
+
+     let object_with_datas_to_insert_on_tago = {};
+     let byte_array = new Array();
+     let current_byte = "";
+
+     for(let i = 0; i < hexa_code.length; i++){
+       
+     }
      //the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
     }
 
