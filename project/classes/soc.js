@@ -111,16 +111,20 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code){//private method
-     const message_subtype = (() => {console.log(hexa_code)
-      let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
-      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8);
-      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);console.log(bin_2_decimal)// se este decimal for igual a 3, vou ignorar o código que está commitado abaixo. o código abaixo obtem o valor do subtipo da mensagem.
+     const message_subtype = (() => {
+        let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
+        let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8);
+        let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);
 
-      /* let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
-      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8)
-      let bin_2_decimal = parseInt(hex_2_bin.substring(2,8),2); console.log(hexa_code); */
+        if(bin_2_decimal === 3){
+          return "Non Standard message type";
+
+        }else{
+          return parseInt(hex_2_bin.substring(2,8),2); 
+        }
      })() 
 
+      console.log(message_subtype);
 
 
 
