@@ -12,24 +12,24 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-   decode(file_content, esn_value){//public method
+    decode(file_content, esn_value){//public method
 
-      let hexa_code = this.get_hexa_code_from_ftp_file(file_content);
+        let hexa_code = this.get_hexa_code_from_ftp_file(file_content);
 
-      //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
-      let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
-      let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
-      let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
-                  
-      if(bin_2_decimal === 0){
-         return this.Decode_default_message(hexa_code,  esn_value);
+        //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
+        let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
+        let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
+        let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
+                    
+        if(bin_2_decimal === 0){
+          return this.Decode_default_message(hexa_code,  esn_value);
 
-      }else if(bin_2_decimal === 1){
-         return this.Decode_truncate_message(hexa_code);
+        }else if(bin_2_decimal === 1){
+          return this.Decode_truncate_message(hexa_code);
 
-      }else{
-        return this.Decode_type3_message(hexa_code);
-      } 
+        }else{
+          return this.Decode_type3_message(hexa_code);
+        } 
 
     }
 
@@ -38,54 +38,54 @@ class smart_one_c_message extends ftp_and_tago_function {
 
      Decode_default_message(hexa_code, esn_value){//private method
 
-      const latitude = this.decode_lat(hexa_code.substring(2,8));
-      const longitude = this.decode_lng(hexa_code.substring(8,14));
-      
-
-      let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
-      let current_byte = "";
-      let byte_array = new Array()
-
-        for(let i= 0; i < hexa_code.length; i++){
-          current_byte += hexa_code[i];
+        const latitude = this.decode_lat(hexa_code.substring(2,8));
+        const longitude = this.decode_lng(hexa_code.substring(8,14));
         
-          if(current_byte.length === 2){
-            byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
-            let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
-            let value_of_each_bit = {  "002":{batery:"Good Batery"}, "012":{batery:"replace batery"},    "003":{gps_data:"GPS Data valid"},"013":{gps_data:"GPS Data wrong"},    "014":{missed_input1:true},"015":{missed_input2:true},   "006":"","016":"",   "007":( () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } )(),  "017":( () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } )(),   "700":{input1_change:"Did not trigger message"},"710":{input1_change:"Triggered message"},   "701":{input1_state:"closed"},"711":{input1_state:"open"},   "702":{input2_change:"Did not trigger message"},"712":{input2_change:"Triggered message"},   "703":{Input2_state:"closed"},"713":{Input2_state:"open"},   "704":"","714":"","705":"","715":"","706":"","716":"","707":( () => {})(), "717": (() => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7];  let bin_2_decimal = parseInt(binary_code,2);  bin_2_decimal === 0 ?object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "location message" : bin_2_decimal === 1 ?object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Device Turned on Message" : bin_2_decimal === 2 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Change of location area alert message" :  bin_2_decimal === 3 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Input status changed message" : bin_2_decimal === 4 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "undesired input state message" :object_with_datas_to_insert_on_tago["metadata"]["sub_type"]="re-centering message" })(),    "803":{vibration_state_changed:"This message is being transmitted for a reason other than the above reasons"},"813":{vibration_state_changed:"vibration just changed state"},   "804":{vibration_Unit:"is not in a state of vibration"},"814":{vibration_Unit:"Unit is in a state of vibration"},   "805":{type_location:"GPS data reported is from a 3D fix"},"815":{type_location:"GPS data reported is from a 2D fix"},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:"High confidence in GPS fix accuracy"},"817":{gps_accuracy:"Reduced confidence in GPS fix accuracy"}}
-            
+
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
+        let current_byte = "";
+        let byte_array = new Array()
+
+          for(let i= 0; i < hexa_code.length; i++){
+            current_byte += hexa_code[i];
           
-              const decode_binary_code = ( ()=> {
-
-                  for(let i = 0; i < current_byte_2_bin.length; i++ ){
-                    let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
-  
-                    values === ("000" || "001") 
-                                            ? ''
-                                            : ( () => {
-                                              let bit_value = value_of_each_bit[values];
-
-                                              if(bit_value !== undefined){
-                                                Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
-                                                }
-
-                                            } )()
-
-
-                    values = ""; 
-
-                  }
+            if(current_byte.length === 2){
+              byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
+              let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
+              let value_of_each_bit = {  "002":{batery:"Good Batery"}, "012":{batery:"replace batery"},    "003":{gps_data:"GPS Data valid"},"013":{gps_data:"GPS Data wrong"},    "014":{missed_input1:true},"015":{missed_input2:true},   "006":"","016":"",   "007":( () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } )(),  "017":( () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } )(),   "700":{input1_change:"Did not trigger message"},"710":{input1_change:"Triggered message"},   "701":{input1_state:"closed"},"711":{input1_state:"open"},   "702":{input2_change:"Did not trigger message"},"712":{input2_change:"Triggered message"},   "703":{Input2_state:"closed"},"713":{Input2_state:"open"},   "704":"","714":"","705":"","715":"","706":"","716":"","707":( () => {})(), "717": (() => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7];  let bin_2_decimal = parseInt(binary_code,2);  bin_2_decimal === 0 ?object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "location message" : bin_2_decimal === 1 ?object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Device Turned on Message" : bin_2_decimal === 2 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Change of location area alert message" :  bin_2_decimal === 3 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "Input status changed message" : bin_2_decimal === 4 ? object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = "undesired input state message" :object_with_datas_to_insert_on_tago["metadata"]["sub_type"]="re-centering message" })(),    "803":{vibration_state_changed:"This message is being transmitted for a reason other than the above reasons"},"813":{vibration_state_changed:"vibration just changed state"},   "804":{vibration_Unit:"is not in a state of vibration"},"814":{vibration_Unit:"Unit is in a state of vibration"},   "805":{type_location:"GPS data reported is from a 3D fix"},"815":{type_location:"GPS data reported is from a 2D fix"},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:"High confidence in GPS fix accuracy"},"817":{gps_accuracy:"Reduced confidence in GPS fix accuracy"}}
               
-            }) () 
+            
+                const decode_binary_code = ( ()=> {
 
+                    for(let i = 0; i < current_byte_2_bin.length; i++ ){
+                      let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
+    
+                      values === ("000" || "001") 
+                                              ? ''
+                                              : ( () => {
+                                                let bit_value = value_of_each_bit[values];
+
+                                                if(bit_value !== undefined){
+                                                  Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
+                                                  }
+
+                                              } )()
+
+
+                      values = ""; 
+
+                    }
+                
+              }) () 
+
+          
+              current_byte_2_bin = "";
+              current_byte = "";
+            } 
+        } //end of for 
         
-            current_byte_2_bin = "";
-            current_byte = "";
-          } 
-      } //end of for 
-      
-      
-      return object_with_datas_to_insert_on_tago;
+        
+        return object_with_datas_to_insert_on_tago;
     }  
 
 
