@@ -21,23 +21,26 @@ class smart_one_c_message extends ftp_and_tago_function {
         let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
         let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
                     
+
         if(bin_2_decimal === 0){
           return this.Decode_default_message(hexa_code,  esn_value);
 
         }else if(bin_2_decimal === 1){
           return this.Decode_truncate_message(hexa_code);
 
-        }else{
+        }else if(bin_2_decimal === 3){
           return this.Decode_type3_message(hexa_code);
         } 
+
 
     }
 
 
 
 
-     Decode_default_message(hexa_code, esn_value){//private method
 
+     Decode_default_message(hexa_code, esn_value){//private method
+        
         const latitude = this.decode_lat(hexa_code.substring(2,8));
         const longitude = this.decode_lng(hexa_code.substring(8,14));
         
@@ -60,16 +63,15 @@ class smart_one_c_message extends ftp_and_tago_function {
                     for(let i = 0; i < current_byte_2_bin.length; i++ ){
                       let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
     
-                      values === ("000" || "001") 
-                                              ? ''
-                                              : ( () => {
-                                                let bit_value = value_of_each_bit[values];
+                      values === "000" || values === "001"                                               
+                                              && ( () => {
+                                                  let bit_value = value_of_each_bit[values];
 
-                                                if(bit_value !== undefined){
-                                                  Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
-                                                  }
+                                                  if(bit_value !== undefined){
+                                                    Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
+                                                   }
 
-                                              } )()
+                                                } )()
 
 
                       values = ""; 
@@ -98,8 +100,9 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
      Decode_truncate_message(hexa_code){//private method
-      
+        console.log("Truncate")
     }
+
 
 
 
@@ -111,37 +114,93 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code){//private method
-     const message_subtype = (() => {
-        let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
-        let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8);
-        let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);
+    let object_with_datas_to_insert_on_tago = { variable:"ESN", metadata:{} };
 
-        if(bin_2_decimal === 3){
-          return "Non Standard message type";
-
-        }else{
-          return parseInt(hex_2_bin.substring(2,8),2); 
-        }
-     })() 
-
-      console.log(message_subtype);
-
-
-
-
-     let object_with_datas_to_insert_on_tago = {};
-     let byte_array = new Array();
-     let current_byte = "";
-
-     for(let i = 0; i < hexa_code.length; i++){
+     const decode_diagnostic_message = () => {
+       let value_of_each_bit = { "103":(() => { return parseInt(current_byte_to_binary[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2) })(),   "113":(()=>{return parseInt(current_byte_to_binary[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2) })(),           "104": {BatteryCondition:"Good batery"}, "114":{BatteryCondition:"Replace batery"},             "105":{GPSsubsystemFault: "GPS system OK."}, "115":{GPSsubsystemFault: "Fault"},             "106":{TransmitterSubsystemFault: "Trasnmitter OK."}, "116":{TransmitterSubsystemFault: "Fault"},             "107":{SchedulerSubsystemFault: "Transmitter OK."}, "117":{SchedulerSubsystemFault: "Fault"},        "2":((binary) => { return { MinInterval:parseInt(binary,2) } })(),          "3": ((binary) => { return {Maxinterval:parseInt(binary,2)} })(),     "4":((binary) => { return {GPSMeanSearchTime:parseInt(binary,2)} })(),       "6":(() => { let byte5_2_bin = ("00000000" + (parseInt(byte_array[5], 16)).toString(2)).slice(-8);  let byte6_to_bin = ("00000000" + (parseInt(byte_array[6], 16)).toString(2)).slice(-8);     return { GpsFails:parsenInt(byte5_2_bin,2) + parseInt(byte6_to_bin,2)}  })(),       "8":(() => { let byte7_2_bin = ("00000000" + (parseInt(byte_array[7], 16)).toString(2)).slice(-8);  let byte8_to_bin = ("00000000" + (parseInt(byte_array[8], 16)).toString(2)).slice(-8);     return { transmissionNumbers:parsenInt(byte7_2_bin,2) + parseInt(byte8_to_bin,2)}  })()   }
        
+       let current_byte = "";
+       let byte_array = new Array()
+
+       for(let i = 0; i < hexa_code.length; i++){
+            current_byte += hexa_code[i];
+
+
+            if(current_byte.length === 2){
+              let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
+              byte_array.push(current_byte);
+
+
+              byte_array.indexOf(current_byte) !== 0
+                                   && (() => { 
+                                        for(let i = 0; i < current_byte_2_bin.length; i++){
+                                          let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
+                      
+                                            let bit_value = value_of_each_bit[values];
+                      
+                                            if(bit_value !== undefined){
+                                              Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
+                                             }
+                                             
+                                            values = ""; 
+                                        }
+                      
+                                 })()
+         
+                                 
+              current_byte_2_bin = "";
+              current_byte = "";
+            }
+
+
+       }
+
+
+      }
+
+    
+     const subtype = (() => {
+        let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);  
+        let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8); 
+        let response;
+
+        console.log(hex_2_bin)
+        console.log(parseInt(hex_2_bin.substring(2,8),2))
+
+        parseInt(hex_2_bin.substring(2,8),2) === 21 && ( () => { response = "DIAGNOSTIC MESSAGE"} )();
+        parseInt(hex_2_bin.substring(2,8),2) === 22 && ( () => { response = "REPLACE BATERY"} )();
+        parseInt(hex_2_bin.substring(2,8),2) === 23 && ( () => { response = "CONTACT SERVICE PROVIDER MESSAGE"} )();
+        parseInt(hex_2_bin.substring(2,8),2) === 24 && ( () => {response = "ACCUMULATE/COUNT MESSAGE"} )();
+        
+        return response;
+     })()
+
+
+
+     if(subtype){
+       console.log(subtype);
+
+       let object_with_datas_to_insert_on_tago = {};
+       let byte_array = new Array();
+       let current_byte = "";
+
+       for(let i = 0; i < hexa_code.length; i++){ 
+       }
      }
+    
+
+     
      //the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
     }
 
 
 
     
+
+
+
+
+
 
 
     decode_lat(latitude_hexadecimal_format){//private method

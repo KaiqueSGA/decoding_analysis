@@ -39,7 +39,7 @@ const axios = require('axios');
               let stu_messages = file_content.split("</stuMessage>");
               stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
               return resolve(stu_messages);
-          }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+          }, 2000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
         })
         
       
@@ -70,7 +70,7 @@ const axios = require('axios');
          return new Promise((resolve, reject) => {
            setTimeout(() => {
                return resolve(resp);
-           }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+           }, 5500)
          })
          
  
