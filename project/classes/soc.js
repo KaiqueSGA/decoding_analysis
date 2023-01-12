@@ -47,7 +47,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
         let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
         let current_byte = "";
-        let byte_array = new Array()
+        let byte_array = new Array();
 
           for(let i= 0; i < hexa_code.length; i++){
             current_byte += hexa_code[i];
@@ -117,55 +117,74 @@ class smart_one_c_message extends ftp_and_tago_function {
     let object_with_datas_to_insert_on_tago = { variable:"ESN", metadata:{} };
 
      const decode_diagnostic_message = () => {
-       let value_of_each_bit = { "103":(() => { return parseInt(current_byte_to_binary[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2) })(),   "113":(()=>{return parseInt(current_byte_to_binary[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2) })(),           "104": {BatteryCondition:"Good batery"}, "114":{BatteryCondition:"Replace batery"},             "105":{GPSsubsystemFault: "GPS system OK."}, "115":{GPSsubsystemFault: "Fault"},             "106":{TransmitterSubsystemFault: "Trasnmitter OK."}, "116":{TransmitterSubsystemFault: "Fault"},             "107":{SchedulerSubsystemFault: "Transmitter OK."}, "117":{SchedulerSubsystemFault: "Fault"},        "2":((binary) => { return { MinInterval:parseInt(binary,2) } })(),          "3": ((binary) => { return {Maxinterval:parseInt(binary,2)} })(),     "4":((binary) => { return {GPSMeanSearchTime:parseInt(binary,2)} })(),       "6":(() => { let byte5_2_bin = ("00000000" + (parseInt(byte_array[5], 16)).toString(2)).slice(-8);  let byte6_to_bin = ("00000000" + (parseInt(byte_array[6], 16)).toString(2)).slice(-8);     return { GpsFails:parsenInt(byte5_2_bin,2) + parseInt(byte6_to_bin,2)}  })(),       "8":(() => { let byte7_2_bin = ("00000000" + (parseInt(byte_array[7], 16)).toString(2)).slice(-8);  let byte8_to_bin = ("00000000" + (parseInt(byte_array[8], 16)).toString(2)).slice(-8);     return { transmissionNumbers:parsenInt(byte7_2_bin,2) + parseInt(byte8_to_bin,2)}  })()   }
-       
-       let current_byte = "";
-       let byte_array = new Array()
+         let byte_array = new Array();
+         let current_byte = "";
 
-       for(let i = 0; i < hexa_code.length; i++){
-            current_byte += hexa_code[i];
-
-
-            if(current_byte.length === 2){
-              let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
-              byte_array.push(current_byte);
+         //console.log(hexa_code)
+         for(let i= 0; i < hexa_code.length; i++){
+              current_byte += hexa_code[i];
 
 
-              byte_array.indexOf(current_byte) !== 0
-                                   && (() => { 
-                                        for(let i = 0; i < current_byte_2_bin.length; i++){
-                                          let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
-                      
-                                            let bit_value = value_of_each_bit[values];
-                      
-                                            if(bit_value !== undefined){
-                                              Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
-                                             }
-                                             
-                                            values = ""; 
-                                        }
-                      
-                                 })()
-         
-                                 
-              current_byte_2_bin = "";
-              current_byte = "";
-            }
+              if(current_byte.length === 2){//console.log(current_byte)
+                byte_array.push(current_byte);
+                let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
+                let value_of_each_bit = { "103":(() => {  return { NumberOfTransmissions:parseInt(current_byte_2_bin[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2)}  })(),   "113":(()=>{ return { NumberOfTransmissions:parseInt(current_byte_2_bin[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2)}  })(),           "104": {BatteryCondition:"Good batery"}, "114":{BatteryCondition:"Replace batery"},             "105":{GPSsubsystemFault: "GPS system OK."}, "115":{GPSsubsystemFault: "Fault"},             "106":{TransmitterSubsystemFault: "Trasnmitter OK."}, "116":{TransmitterSubsystemFault: "Fault"},             "107":{SchedulerSubsystemFault: "Transmitter OK."}, "117":{SchedulerSubsystemFault: "Fault"},        "2":((binary) => {  return { MinInterval:parseInt(binary,2) }  })(),          "3": ((binary) => {  return {Maxinterval:parseInt(binary,2)}  })(),     "4":((binary) => { return {GPSMeanSearchTime:parseInt(binary,2)} })(),       "6":(() => { let byte5_2_bin = ("00000000" + (parseInt(byte_array[5], 16)).toString(2)).slice(-8);  let byte6_to_bin = ("00000000" + (parseInt(byte_array[6], 16)).toString(2)).slice(-8);     return { GpsFails:parseInt(byte5_2_bin,2) + parseInt(byte6_to_bin,2)}  })(),       "8":(() => { let byte7_2_bin = ("00000000" + (parseInt(byte_array[7], 16)).toString(2)).slice(-8);  let byte8_to_bin = ("00000000" + (parseInt(byte_array[8], 16)).toString(2)).slice(-8);     return { transmissionNumbers: (parseInt(byte7_2_bin,2) + parseInt(byte8_to_bin,2)) }  })()   }
+
+                   
+                   if(byte_array.indexOf(current_byte) !== 0){
+
+                      if(byte_array.indexOf(current_byte) === 2){
+                        Object.assign(object_with_datas_to_insert_on_tago,value_of_each_bit["2"]);
+
+                      }else if(byte_array.indexOf(current_byte) === 3){
+                        Object.assign(object_with_datas_to_insert_on_tago,value_of_each_bit["3"]);
+
+                      }else if(byte_array.indexOf(current_byte) === 4){
+                        Object.assign(object_with_datas_to_insert_on_tago,value_of_each_bit["4"]);
+
+                      }else if(byte_array.indexOf(current_byte) === 6){
+                        Object.assign(object_with_datas_to_insert_on_tago,value_of_each_bit["6"]);
+
+                      }else if(byte_array.indexOf(current_byte) === 8){
+                        Object.assign(object_with_datas_to_insert_on_tago,value_of_each_bit["8"]);
+
+                      }else{
+                           for(let i = 0; i < current_byte_2_bin.length; i++){
+                              let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
+                              let bit_value = value_of_each_bit[values];console.log(current_byte, values, bit_value)
+
+                                if(bit_value !== undefined){
+                                  Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
+                                }
+                                
+                                values = ""; 
+                            }
+
+                      }
 
 
-       }
+                  } 
+
+                  current_byte_2_bin = "";
+                  current_byte = "";
+               }
+
+           }
 
 
-      }
+           return object_with_datas_to_insert_on_tago;
+           
+         }
 
     
+
+
+
      const subtype = (() => {
         let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);  
         let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8); 
         let response;
 
-        console.log(hex_2_bin)
-        console.log(parseInt(hex_2_bin.substring(2,8),2))
 
         parseInt(hex_2_bin.substring(2,8),2) === 21 && ( () => { response = "DIAGNOSTIC MESSAGE"} )();
         parseInt(hex_2_bin.substring(2,8),2) === 22 && ( () => { response = "REPLACE BATERY"} )();
@@ -177,15 +196,22 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
+
+
      if(subtype){
-       console.log(subtype);
+         if(subtype === "DIAGNOSTIC MESSAGE"){
+           console.log(decode_diagnostic_message());
+          
+         }else if(subtype === "REPLACE BATERY"){
+          
+          
+         }else if(subtype === "CONTACT SERVICE PROVIDER MESSAGE"){
+           
 
-       let object_with_datas_to_insert_on_tago = {};
-       let byte_array = new Array();
-       let current_byte = "";
+         }else if(subtype === "ACCUMULATE/COUNT MESSAGE"){
 
-       for(let i = 0; i < hexa_code.length; i++){ 
-       }
+
+         }
      }
     
 
