@@ -92,7 +92,7 @@ const soc_messages = require('./classes/soc.js');
                          
           
                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
-                           let decoded_code = smart_one_c_message.decode(stu_message, esn_value);
+                           let decoded_code = smart_one_c_message.decode(stu_message, esn_value);console.log(decoded_code)
                            //await smart_one_c_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id);
                            //await smart_one_c_message.delete_file_from_ftp(); 
                           
