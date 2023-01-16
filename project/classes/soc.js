@@ -1,15 +1,17 @@
 //Dev: Kaique YUdji
 //Date:27/12/2022
 //Code description: In this file, i'm decoding the xml files storaged per the ftp server. The code that I created is first creating all function and after call them
-const { default: ConsoleService } = require("@tago-io/sdk/out/modules/Services/Console");
+
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
+
+
+
 
 class smart_one_c_message extends ftp_and_tago_function {
 
   constructor(xml_file_name, ftp_connection){
     super(xml_file_name, ftp_connection);
   }
-
 
 
     decode(file_content, esn_value){//public method
@@ -67,8 +69,9 @@ class smart_one_c_message extends ftp_and_tago_function {
 
                     for(let i = 0; i < current_byte_2_bin.length; i++ ){
                       let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
-    
-                      values === "000" || values === "001"                                               
+                      
+
+                      values !== "000" && values !== "001"                                               
                                               && ( () => {
                                                   let bit_value = value_of_each_bit[values];
 
@@ -124,10 +127,10 @@ class smart_one_c_message extends ftp_and_tago_function {
      //this code needs to be fixed, instead of convert to binary and after convert to deciaml, my code is going to convert direct of hex to decimal
         if(subtype()){
             if(subtype() === "DIAGNOSTIC MESSAGE"){console.log("diagnostic")
-              return decode_diagnostic_message();
+              return decode_diagnostic_message("diagnosticMessage/type3");
             
             }else if(subtype() === "REPLACE BATERY"){console.log("replace")
-              return decode_diagnostic_message();//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
+              return decode_diagnostic_message("bateryMessage/type3");//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
             
             }else if(subtype() === "CONTACT SERVICE PROVIDER MESSAGE"){
               return hexa_code;
@@ -142,7 +145,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-        function decode_diagnostic_message(){
+        function decode_diagnostic_message(subtype){
             let byte_array = new Array();
             let current_byte = "";
 
@@ -196,7 +199,10 @@ class smart_one_c_message extends ftp_and_tago_function {
                     }
 
                 }
-
+ 
+                subtype === "diagnosticMessage/type3"
+                             ?object_with_datas_to_insert_on_tago.subtype = "diagnosticMessage/type3"
+                             :object_with_datas_to_insert_on_tago.sub_type = "bateryMessage/type3";
 
                 return object_with_datas_to_insert_on_tago;
                 
@@ -232,7 +238,7 @@ class smart_one_c_message extends ftp_and_tago_function {
                     ? Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["7"]) 
 
                     :byte_array.indexOf(current_byte) === 8 
-                    && Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["8"])
+                    && Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["8"]);
 
 
                     current_byte = "";
@@ -240,6 +246,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
                }
 
+               object_with_datas_to_insert_on_tago.subtype = "accumulateMessage/type3";
                return object_with_datas_to_insert_on_tago;
             }
 
@@ -249,7 +256,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
           function subtype(){
-              let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);  
+              let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2);
               let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8); 
               let response;
 

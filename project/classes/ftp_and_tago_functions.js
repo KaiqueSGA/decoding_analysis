@@ -83,12 +83,13 @@ const axios = require('axios');
 
 
      async insert_on_tago(decoded_code, account_tago, Device, device_id){//public method
+
         let device_token = (await account_tago.devices.paramList(device_id)).find(parameter => parameter.key === "device_token").value;
         const tago_device = new Device({ token: device_token });
-        this.add_google_link(decoded_code);
-        await this.add_google_address(decoded_code);
-
-        return  console.log(await tago_device.sendData(decoded_code));
+        decoded_code.location !== undefined && this.add_google_link(decoded_code)
+        decoded_code.location !== undefined && await this.add_google_address(decoded_code);
+        console.log(decoded_code)
+        return console.log(await tago_device.sendData(decoded_code));
       }
  
 
