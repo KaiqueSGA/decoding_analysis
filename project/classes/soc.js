@@ -22,13 +22,13 @@ class smart_one_c_message extends ftp_and_tago_function {
         let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
                     
 
-        if(bin_2_decimal === 0){
+        if(bin_2_decimal === 0){console.log("default")
           return this.Decode_default_message(hexa_code,  esn_value);
 
         }else if(bin_2_decimal === 1){
           return this.Decode_truncate_message(hexa_code, esn_value);
 
-        }else if(bin_2_decimal === 3){
+        }else if(bin_2_decimal === 3){console.log("type3")
           return this.Decode_type3_message(hexa_code, esn_value);
         } 
 
@@ -123,17 +123,17 @@ class smart_one_c_message extends ftp_and_tago_function {
 
      //this code needs to be fixed, instead of convert to binary and after convert to deciaml, my code is going to convert direct of hex to decimal
         if(subtype()){
-            if(subtype() === "DIAGNOSTIC MESSAGE"){
+            if(subtype() === "DIAGNOSTIC MESSAGE"){console.log("diagnostic")
               return decode_diagnostic_message();
             
-            }else if(subtype() === "REPLACE BATERY"){
+            }else if(subtype() === "REPLACE BATERY"){console.log("replace")
               return decode_diagnostic_message();//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
             
             }else if(subtype() === "CONTACT SERVICE PROVIDER MESSAGE"){
               return hexa_code;
 
-            }else if(subtype() === "ACCUMULATE/COUNT MESSAGE"){
-        
+            }else if(subtype() === "ACCUMULATE/COUNT MESSAGE"){console.log("accumulate")
+              return AccumulateCountMessage();
 
             }
       }
@@ -214,13 +214,13 @@ class smart_one_c_message extends ftp_and_tago_function {
                for(let i = 0; i < hexa_code.length; i++){
                  current_byte += hexa_code[i];
 
-                 if(current_byte.length === 2){
+                 if(current_byte.length === 2){//estou multiplicando os valores por 10 pq eu quero o tempo em minutos
                     byte_array.push(current_byte);
-                    let value_of_each_bit = { "1":(() => {  if(hexa_code.substring(2,4) === "FFFF"){ return {Entry1Stored:"Turn entry 1 storage off"} }else{ /* convert this string that is on the left to decimal and multiply this value per 10  */ }  })(), "3":(() => {  if(hexa_code.substring(2,4) === "FFFF"){ return {Entry2Stored:"Turn entry 1 storage off"} }else{ /* convert this string that is on the left to decimal and multiply this value per 10  */ }  })(), "5":{/* here, i need to catch the byte 5 and 6 and convert to  decimal, after of convertion, i am going to multiply this value per 10  */}, "7":{/* convert the hexadecimal code to decimal  */}, "8":{/* convert the hexadecimal code to decimal  */} }
-
-                       
+                    let value_of_each_bit = { "1":(() => {  if(hexa_code.substring(2,4) === "FFFF"){ return {Entry1Stored:"Turn entry 1 storage off"} }else{ return {Entry1Stored: ( (parseInt(hexa_code.substring(0,4), 16)) * 10 ) }}  })(), "3":(() => {  if(hexa_code.substring(2,4) === "FFFF"){ return {Entry2Stored:"Turn entry 1 storage off"} }else{ return { Entry2Stored: ( (parseInt(hexa_code.substring(4,8), 16)) * 10 )} }  })(), "5":{ StorageVibration: ( (parseInt(hexa_code.substring(8,12),16)) * 10 )}, "7":(() => { if(hexa_code.substring(0,2) === "FF"){ return {EntryCount1:"off"}  }else{ return{EntryCount1:( parseInt(hexa_code.substring(12,14),16) )} }  })(), "8":(() => { if(hexa_code.substring(0,2) === "FF"){ return {EntryCount2:"off"}  }else{ return{EntryCount2:( parseInt(hexa_code.substring(14,16),16) )} }  })() }
+                    
+                        
                     byte_array.indexOf(current_byte) === 1 // 1 and 2 byte
-                    ? Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["1"])
+                    ? Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["1"]) 
 
                     :byte_array.indexOf(current_byte) === 3 // 3 and 4 byte 
                     ? Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["3"])
@@ -232,12 +232,15 @@ class smart_one_c_message extends ftp_and_tago_function {
                     ? Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["7"]) 
 
                     :byte_array.indexOf(current_byte) === 8 
-                    && Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["7"])
+                    && Object.assign(object_with_datas_to_insert_on_tago.metadata, value_of_each_bit["8"])
+
+
+                    current_byte = "";
                  }
 
-                 current_byte = "";
                }
 
+               return object_with_datas_to_insert_on_tago;
             }
 
 
