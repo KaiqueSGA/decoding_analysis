@@ -52,7 +52,7 @@ class smart_one_c_message extends ftp_and_tago_function {
         const longitude = this.decode_lng(hexa_code.substring(8,14));
         
 
-        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{} }; //this object will be filled during of decoding of bits of each byte
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:"00"} }; //this object will be filled during of decoding of bits of each byte
         let current_byte = "";
         let byte_array = new Array();
 
@@ -108,7 +108,14 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
      Decode_truncate_message(hexa_code){//private method
-        console.log("Truncate")
+       if(hexa_code.length === 18){//the truncate message can has more than 9 bytes(18 chracters)
+         const MSlatitude = this.decode_lat(hexa_code.substring(2,4));console.log(hexa_code, hexa_code.substring(2,4), MSlatitude);
+         const MSlongitude = this.decode_lng(hexa_code.substring(8,10));console.log(hexa_code, hexa_code.substring(8,10), MSlongitude);
+        
+       }else{
+
+       }  
+      
     }
 
 
@@ -122,25 +129,24 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code, esn_value){//private method
-        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, metadata:{} };
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, metadata:{message_type:"03"} };
 
      //this code needs to be fixed, instead of convert to binary and after convert to deciaml, my code is going to convert direct of hex to decimal
         if(subtype()){
             if(subtype() === "DIAGNOSTIC MESSAGE"){console.log("diagnostic")
-              return decode_diagnostic_message("diagnosticMessage/type3");
+              return decode_diagnostic_message("diagnosticMessage");
             
             }else if(subtype() === "REPLACE BATERY"){console.log("replace")
-              return decode_diagnostic_message("bateryMessage/type3");//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
+              return decode_diagnostic_message("bateryMessage");//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
             
             }else if(subtype() === "CONTACT SERVICE PROVIDER MESSAGE"){
-              return hexa_code;
+              return {provider_message: hexa_code, metadata:{message_type:"03", sub_type:""}};
 
             }else if(subtype() === "ACCUMULATE/COUNT MESSAGE"){console.log("accumulate")
               return AccumulateCountMessage();
 
             }
       }
-
 
 
 
@@ -199,10 +205,12 @@ class smart_one_c_message extends ftp_and_tago_function {
                     }
 
                 }
+
+
  
-                subtype === "diagnosticMessage/type3"
-                             ?object_with_datas_to_insert_on_tago.subtype = "diagnosticMessage/type3"
-                             :object_with_datas_to_insert_on_tago.sub_type = "bateryMessage/type3";
+                subtype === "diagnosticMessage"
+                             ?object_with_datas_to_insert_on_tago.metadata.sub_type = "diagnosticMessage"
+                             :object_with_datas_to_insert_on_tago.metadata.sub_type = "bateryMessage";
 
                 return object_with_datas_to_insert_on_tago;
                 
@@ -246,7 +254,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
                }
 
-               object_with_datas_to_insert_on_tago.subtype = "accumulateMessage/type3";
+               object_with_datas_to_insert_on_tago.metadata.sub_type = "accumulateMessage";
                return object_with_datas_to_insert_on_tago;
             }
 
@@ -269,8 +277,8 @@ class smart_one_c_message extends ftp_and_tago_function {
               return response;
           }
           
-          //the type 3 can has many diffrents types of message, we can differentiate the messages trough of subtypes.
-    }
+          
+    }//end of method 
 
 
 
