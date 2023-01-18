@@ -27,7 +27,7 @@ class smart_one_c_message extends ftp_and_tago_function {
         if(bin_2_decimal === 0){console.log("default")
           return this.Decode_default_message(hexa_code,  esn_value);
 
-        }else if(bin_2_decimal === 1){
+        }else if(bin_2_decimal === 1){console.log("truncate")
           return this.Decode_truncate_message(hexa_code, esn_value);
 
         }else if(bin_2_decimal === 3){console.log("type3")
@@ -107,14 +107,20 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-     Decode_truncate_message(hexa_code){//private method
-       if(hexa_code.length === 18){//the truncate message can has more than 9 bytes(18 chracters)
-         const MSlatitude = this.decode_lat(hexa_code.substring(2,4));console.log(hexa_code, hexa_code.substring(2,4), MSlatitude);
-         const MSlongitude = this.decode_lng(hexa_code.substring(8,10));console.log(hexa_code, hexa_code.substring(8,10), MSlongitude);
-        
-       }else{
+     Decode_truncate_message(hexa_code, esn_value){//private method
+          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:"01", sub_type:""} };
+          let hex_2_bin = ("00000000" + (parseInt(hexa_code.substring(0,2), 16)).toString(2)).slice(-8);
+          let submask_data = parseInt(hex_2_bin.substring(2),2);
 
-       }  
+          const decoded_lat = this.decode_lat(`${hexa_code.substring(2,4)}${hexa_code.substring(4,6)}${hexa_code.substring(6,8)}`);
+          const decoded_lng = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
+
+          hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = "Single Packet" : object_with_datas_to_insert_on_tago.metadata.sub_type = "Multiple Packet"
+          object_with_datas_to_insert_on_tago.location.coordinates = [decoded_lng, decoded_lat];
+          object_with_datas_to_insert_on_tago.metadata.reserved = hexa_code.substring(14); 
+          object_with_datas_to_insert_on_tago.metadata.submask_data = submask_data;
+
+          return object_with_datas_to_insert_on_tago;
       
     }
 
