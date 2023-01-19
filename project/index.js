@@ -65,6 +65,12 @@ const soc_messages = require('./classes/soc.js');
 
 
  async function Changing_algorithm(file_list, ftp_connection, account_tago){
+
+      /* Este é um code de baixa coesao.
+      - Por que? 
+      Esta função está com muitas responsabilidades, responsabilidades que não são suas por padrão. Seu objetivo é apenas escolher o algorítimo, mas ela está realizando consultas(Tago.IO), capturando dados(esn), para depois escolher o algorítimo
+      */
+
        
         const cacth_esn = (data) =>{//what is ESN? Read in our README.
             let help = data.indexOf("<esn>");

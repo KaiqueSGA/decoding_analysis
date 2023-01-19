@@ -1,7 +1,6 @@
 //Dev: Kaique YUdji
 //Date:27/12/2022
 //Code description: In this file, i'm decoding the xml files storaged per the ftp server. The code that I created is first creating all function and after call them
-
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
 
 
@@ -14,6 +13,7 @@ class smart_one_c_message extends ftp_and_tago_function {
   }
 
 
+  /* Função com um alto nível de acoplamento, pois ela tem uma relação de dependência muito grande com outras funções */
     decode(file_content, esn_value){//public method
 
         let hexa_code = this.get_hexa_code_from_ftp_file(file_content);
