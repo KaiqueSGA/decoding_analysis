@@ -1,0 +1,33 @@
+--> QUAL É A FINALIDADE DO PROJETO?💻
+    > O projeto tem como objetivo consultar um servidor ftp, capturar os arquivos que estão lá, realizar a decodificação dos arquivos,
+    inserir os dados decodificado dentro da plataforma TAGO.IO e remover o arquivo que já foi decodificado do diretório principal do servidor. 
+    Para realizar todas as tarefas acima, o meu code precisa ser uma analysis externa da TAGO.IO.
+
+
+ 
+
+--> QUAL É O PONTO DE PARTIDA DO MEU ALGORITIMO("por onde ele começa?")🛣️
+    > O script tem como ponto de partida o arquivo index.js. Dentro deste arquivo, eu tenho uma função chamada: Decoding_analysis, 
+    esta função será responsável por integrar o meu script local, com a plataforma da TAGO.IO.
+
+    > Mas como essa integração acontece(meu script vs TAGO.IO)?
+    Essa integração acontece quando eu instalo um npm(própio da tago), faço a importação de uma classe(chamada "analysis") e na hora de instaciá-la eu passa 2 argumentos(a minha função e o token da analysis) 
+    Para saber o que é e como uma analysis funciona, eu recomendo ler a documentação da TAGO.IO,
+    que explica o que é uma analysis, como ela é acionada, como criar e como rodá-la de maneira externa(que é o caso deste script). --> https://help.tago.io/portal/en/kb/articles/29-analysis-overview
+
+
+   
+
+--> QUANDO DEVO EXECUTAR O CÓDIGO NA MINHA MÁQUINA LOCAL E QUANDO DEV SUBÍ-LO PARA A TAGO?💼
+    > Geralmente, enquanto o código está em fase de desenvolvimento é melhor desenvolvê-lo na sua máquina local, pois com o compilador, você tem acesso a diversar ferramentas(ferramentas que você não tem acesso dentro da TAGO).
+    > Além das ferramentas, você pode usar serviços de terceiros, como: bibliotecas, frameworks etc... 
+    > Após terminar o desenvolvimento em sua máquina local, você precisa criar um "build" do projeto e subí-lo para a TAGO.IO.
+
+    > Como buildar o projeto e subí-lo para a Tago? --> Aqui está um link da documentação da tago que vai te auxiliar nesse processo --> https://help.tago.io/portal/en/kb/articles/174-running-analysis-as-external-using-node-js#4_Use_Analysis-Builder_to_Upload_the_Script 
+
+
+
+
+--> Como o algoritimo do código funciona?
+    > Bom, agora que você já sabe o mínimo sobre a TAGO.IO, vou te explicar o algoritimo "bruto" do script.
+
