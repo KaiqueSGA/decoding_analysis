@@ -1,3 +1,7 @@
+
+
+
+
 --> QUAL É A FINALIDADE DO PROJETO?💻
     > O projeto tem como objetivo consultar um servidor ftp, capturar os arquivos que estão lá, realizar a decodificação dos arquivos,
     inserir os dados decodificado dentro da plataforma TAGO.IO e remover o arquivo que já foi decodificado do diretório principal do servidor. 
@@ -24,6 +28,21 @@
     > Após terminar o desenvolvimento em sua máquina local, você precisa criar um "build" do projeto e subí-lo para a TAGO.IO.
 
     > Como buildar o projeto e subí-lo para a Tago? --> Aqui está um link da documentação da tago que vai te auxiliar nesse processo --> https://help.tago.io/portal/en/kb/articles/174-running-analysis-as-external-using-node-js#4_Use_Analysis-Builder_to_Upload_the_Script 
+
+
+
+
+--> COMO FUNCIONA A ORGANIZAÇÃO DE PASTAS DO PROJETO?📚
+   > A pasta project é responsável por armazenar todo o nosso script. Dentro desta pasta, temos o arquivo: index.js. Responsável por dar início ao nosso algoritimo.
+   > O arquivo index.js tem um alto nível de acoplamento com os módulos que estão armazenados dentro da pasta classes.
+   > Dentro destas classes, temos 3 módulos: stu, soc, prov. Cada módulo possui uma classe responsável por decodificar os arquivos pertencentes a cada device(device stu, device soc e messages prov).
+
+
+
+
+--> REGRAS DE NEGÓCIO
+
+>> Decodificação de arquivos SOC
 
 
 
