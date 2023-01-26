@@ -43,7 +43,11 @@
 --> REGRAS DE NEGÓCIO
 
 >> Decodificação de arquivos SOC
+    ?O que é um arquivo soc? --> um arquivo SOC é uma nomenclatura que nós utilizamos para nos referir a um arquivo XML que foi emitido pelo dispositivo Smart-One-C.
+    > Um arquivo SOC pode conter 3 tipos diferentes de dados, estes são: DEFAULT MESSAGE🥇    TRUNCATE MESSAGE🥈     TYPE 3 MESSAGE🥉.
+    > Cada tipo de mensagem possui uma decodificação diferente. Você pode encontrar as funções responsáveis por decodificar estas mensagens dentro da classe do Smart-One-C(soc.js) --> Preciso ajustar o código para o princípio S do solid(cada classe deve ter apenas uma responsabilidade) ou seja, devo criar uma classe para cada tipo de mensagem e uma classe abstrata smart_one_c, para guradar métodos como: decode_lat, decode_lng, get_hexa_code_from_file etc...
 
+    >Para entender melhor como funciona a decodificação de cada tipo de mensagem, recomendo a leitura do manual de usuário smart_one_c.
 
 
 
