@@ -35,11 +35,11 @@ const axios = require('axios');
 
         return new Promise((resolve, reject) => {
           setTimeout(() => {
-              this.file_content = file_content;console.log(file_content)
+              this.file_content = file_content;
               let stu_messages = file_content.split("</stuMessage>");
               stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
               return resolve(stu_messages);
-          }, 4000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+          }, 5000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
         })
         
       
@@ -52,12 +52,7 @@ const axios = require('axios');
 
     async delete_file_from_ftp(){//public method
    
-      let resp = await this.ftp_connection.put(this.file_content,`./old/${this.xml_file_name}`, function(err){
-       if(err)
-         return err;   
-       })
-
-       this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
+      let resp = this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
         if(err){
           return err;
         }else{
@@ -70,7 +65,7 @@ const axios = require('axios');
        return new Promise((resolve, reject) => {
          setTimeout(() => {
              return resolve(resp);
-         }, 5500)
+         }, 1000)
        })
        
 
