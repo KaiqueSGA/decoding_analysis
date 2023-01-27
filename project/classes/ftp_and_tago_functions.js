@@ -52,25 +52,30 @@ const axios = require('axios');
 
     async delete_file_from_ftp(){//public method
    
-        let resp = this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
-          if(err){
-            return err;
-          }else{
-            console.log("deleted");
-          }
+      let resp = await this.ftp_connection.put(this.file_content,`./old/${this.xml_file_name}`, function(err){
+       if(err)
+         return err;   
+       })
 
-      })
+       this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
+        if(err){
+          return err;
+        }else{
+          console.log("deleted");
+        }
 
-         
-         return new Promise((resolve, reject) => {
-           setTimeout(() => {
-               return resolve(resp);
-           }, 1000)
-         })
-         
- 
-        
-     }
+    })
+
+       
+       return new Promise((resolve, reject) => {
+         setTimeout(() => {
+             return resolve(resp);
+         }, 5500)
+       })
+       
+
+      
+   }
 
 
 
