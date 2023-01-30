@@ -25,7 +25,7 @@ const axios = require('axios');
                     file_content = "";
                     file_content = file_content + chunk;
 
-                    if(!file_content.includes("</payload>")){/*  console.log(this.delete_file_from_ftp()) */ };
+                    if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
                 });     
 
               }
@@ -36,10 +36,12 @@ const axios = require('axios');
         return new Promise((resolve, reject) => {
           setTimeout(() => {
               this.file_content = file_content;
-              let stu_messages = file_content.split("</stuMessage>");
+              let stu_messages =  file_content !== undefined 
+                                                   ? file_content.split("</stuMessage>")
+                                                   : undefined
               stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
               return resolve(stu_messages);
-          }, 5000)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
+          }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
         })
         
       
@@ -83,7 +85,7 @@ const axios = require('axios');
         const tago_device = new Device({ token: device_token });
         decoded_code.location !== undefined && this.add_google_link(decoded_code)
         decoded_code.location !== undefined && await this.add_google_address(decoded_code);
-        console.log(decoded_code)
+        
         return console.log(await tago_device.sendData(decoded_code));
       }
  
