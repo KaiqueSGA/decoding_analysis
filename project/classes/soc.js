@@ -325,9 +325,15 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
     get_hexa_code_from_ftp_file(stu_message){//private method
-      let firstTag = stu_message.indexOf(">", stu_message.indexOf("<payload"));
-      let secondTag = stu_message.indexOf("</payload>", firstTag);
-      return stu_message.substring(firstTag + 3,secondTag);
+      try{
+        let firstTag = stu_message.indexOf(">", stu_message.indexOf("<payload"));
+        let secondTag = stu_message.indexOf("</payload>", firstTag);
+        return stu_message.substring(firstTag + 3,secondTag);
+
+      }catch(err){
+         console.error(`wasn't possible to get the file content. ${err}`)
+      }
+      
     }
 
 

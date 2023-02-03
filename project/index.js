@@ -100,7 +100,7 @@
                           })
                           
             
-                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log(file_content)
+                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){//console.log(file_content)
                             let decoded_code;
 
                             file_content !== undefined && ( () => {decoded_code = smart_one_c_message.decode(stu_message, esn_value);} )()
