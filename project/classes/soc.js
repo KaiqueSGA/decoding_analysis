@@ -62,7 +62,7 @@ class smart_one_c_message extends ftp_and_tago_function {
             if(current_byte.length === 2){
               byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
               let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
-              let value_of_each_bit = {  "002":{batery:"Good Batery"}, "012":{batery:"replace batery"},    "003":{gps_data:"GPS Data valid"},"013":{gps_data:"GPS Data wrong"},    "014":{missed_input1:true},"015":{missed_input2:true},   "006":"","016":"",   "007": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } ,  "017": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; },   "700":{input_1_change:false},"710":{input_1_change:true},   "701":{input_1_state:false},"711":{input_1_state:true},   "702":{input_2_change:false},"712":{input_2_change:true},   "703":{Input_2_state:false},"713":{Input_2_state:true},   "704":"","714":"","705":"","715":"","706":"","716":"", "707": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal}, "717": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal},    "803":{vibration_state_changed:"This message is being transmitted for a reason other than the above reasons"},"813":{vibration_state_changed:"vibration just changed state"},   "804":{vibration_Unit:"is not in a state of vibration"},"814":{vibration_Unit:"Unit is in a state of vibration"},   "805":{type_location:"GPS data reported is from a 3D fix"},"815":{type_location:"GPS data reported is from a 2D fix"},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:"High confidence in GPS fix accuracy"},"817":{gps_accuracy:"Reduced confidence in GPS fix accuracy"}}
+              let value_of_each_bit = {  "002":{batery:0}, "012":{batery:1},    "003":{gps_data:0},"013":{gps_data:1},    "014":{missed_input1:true},"015":{missed_input2:true},   "006":"","016":"",   "007": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } ,  "017": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; },   "700":{input_1_change:false},"710":{input_1_change:true},   "701":{input_1_state:false},"711":{input_1_state:true},   "702":{input_2_change:false},"712":{input_2_change:true},   "703":{Input_2_state:false},"713":{Input_2_state:true},   "704":"","714":"","705":"","715":"","706":"","716":"", "707": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal}, "717": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal},    "803":{vibration_state_changed:0},"813":{vibration_state_changed:1},   "804":{vibration_Unit:0},"814":{vibration_Unit:1},   "805":{type_location:0},"815":{type_location:1},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:0},"817":{gps_accuracy:1}}
               
             
                 const decode_binary_code = ( ()=> {
@@ -108,17 +108,20 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
      Decode_truncate_message(hexa_code, esn_value, file_content){//private method
-          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:"01", sub_type:"", device_type:"SOC", xml:file_content} };
+          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC", xml:file_content} };
           let hex_2_bin = ("00000000" + (parseInt(hexa_code.substring(0,2), 16)).toString(2)).slice(-8);
           let submask_data = parseInt(hex_2_bin.substring(2),2);
 
           const decoded_lat = this.decode_lat(`${hexa_code.substring(2,4)}${hexa_code.substring(4,6)}${hexa_code.substring(6,8)}`);
           const decoded_lng = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
 
-          hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = "Single Packet" : object_with_datas_to_insert_on_tago.metadata.sub_type = "Multiple Packet"
+          hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = 0 : object_with_datas_to_insert_on_tago.metadata.sub_type = 1
           object_with_datas_to_insert_on_tago.location.coordinates = [decoded_lng, decoded_lat];
-          object_with_datas_to_insert_on_tago.metadata.reserved = hexa_code.substring(14); 
+          object_with_datas_to_insert_on_tago.metadata.user_data = hexa_code.substring(14); 
           object_with_datas_to_insert_on_tago.metadata.submask_data = submask_data;
+
+          object_with_datas_to_insert_on_tago.metadata.lat = decoded_lat;
+          object_with_datas_to_insert_on_tago.metadata.lon = decoded_lng;
 
           return object_with_datas_to_insert_on_tago;
       
@@ -272,9 +275,9 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
           function subtype(){
-              let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2); console.log(byte_that_countains_the_subtype_of_message)
+              let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2); 
               let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8); 
-              let response;  console.log(hex_2_bin, hex_2_bin.substring(2,8), parseInt(hex_2_bin.substring(2,8),2));
+              let response;  console.log(hexa_code, byte_that_countains_the_subtype_of_message,  hex_2_bin, hex_2_bin.substring(2,8), parseInt(hex_2_bin.substring(2,8),2));
 
 
               parseInt(hex_2_bin.substring(2,8),2) === 21 && ( () => { response = "DIAGNOSTIC MESSAGE"} )();

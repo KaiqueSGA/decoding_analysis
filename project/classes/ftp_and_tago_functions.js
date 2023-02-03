@@ -14,36 +14,34 @@ const axios = require('axios');
     async get_file_content(){//public method
         let file_content;
         
-        await this.ftp_connection.get(`./${this.xml_file_name}`, async function(err, stream) {
-            
-              if(err){ 
-                  throw err
-              }else{
-                  stream.once('close', function() {});
+        return new Promise((resolve,reject) => {
+                this.ftp_connection.get(`./${this.xml_file_name}`, async function(err, stream) {
+                  
+                if(err){ 
+                    throw err
+                }else{
+                    stream.once('close', function() {});
 
-                  await stream.on('data', (chunk) => {
-                    file_content = "";
-                    file_content = file_content + chunk;
+                    await stream.on('data', (chunk) => {
+                      file_content = "";
+                      file_content = file_content + chunk;
 
-                    if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
-                });     
+                      if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
 
-              }
-              
-        });
+                      
+                    
+                      let stu_messages =  file_content !== undefined 
+                                                           ? file_content.split("</stuMessage>")
+                                                           : undefined
+                      stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
+                      resolve(stu_messages); 
+                  });     
 
-
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-              this.file_content = file_content;
-              let stu_messages =  file_content !== undefined 
-                                                   ? file_content.split("</stuMessage>")
-                                                   : undefined
-              stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
-              return resolve(stu_messages);
-          }, 3500)//diminuir o tempo do setTimeout(), mandar uma lista de acordo com a quantidade de stu messages que existem dentro do device
-        })
-        
+                 
+                }
+                
+          });
+         })     
       
     }
 
@@ -53,23 +51,17 @@ const axios = require('axios');
 
 
     async delete_file_from_ftp(){//public method
-   
-      let resp = this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
-        if(err){
-          return err;
-        }else{
-          console.log("deleted");
-        }
 
-    })
-
-       
-       return new Promise((resolve, reject) => {
-         setTimeout(() => {
-             return resolve(resp);
-         }, 1000)
-       })
-       
+      return new Promise((resolve,reject) => {
+          this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
+            if(err){
+              return err;
+            }else{
+              resolve(console.log("deleted"));
+            }
+    
+        })
+      })
 
       
    }
