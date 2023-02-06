@@ -91,11 +91,13 @@
                       let file_content = await smart_one_c_message.get_file_content(); //this function retruns an array with all messages that are inside of xml file
                       end_time = Date.now();
 
-                      console.log(`Get response time(ms): ${end_time - start_time} `)
+                      console.log(`Get response time(ms): ${end_time - start_time} `); 
 
                       if(file_content === undefined){
-                        console.log("weren't possible get the content of file")
+                        console.log("weren't possible get the content of file");
+                        await smart_one_c_message.delete_file_from_ftp(); continue;
                       }
+
 
                     for await(let stu_message of file_content){
                         let esn_value = cacth_esn(stu_message); 
@@ -111,8 +113,8 @@
                           if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){//console.log(file_content)
                             let decoded_code;
 
-                            file_content !== undefined && ( () => {decoded_code = smart_one_c_message.decode(stu_message, esn_value);} )();
-                            decoded_code !== undefined && await smart_one_c_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id);
+                            decoded_code = smart_one_c_message.decode(stu_message, esn_value); 
+                            decoded_code !== undefined && await smart_one_c_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message);
                             decoded_code !== undefined && await smart_one_c_message.delete_file_from_ftp(); 
                             
                             

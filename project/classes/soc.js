@@ -52,7 +52,7 @@ class smart_one_c_message extends ftp_and_tago_function {
         const longitude = this.decode_lng(hexa_code.substring(8,14));
         
 
-        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:"00", device_type:"SOC", xml:file_content} }; //this object will be filled during of decoding of bits of each byte
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:0, device_type:"SOC"} }; //this object will be filled during of decoding of bits of each byte
         let current_byte = "";
         let byte_array = new Array();
 
@@ -95,6 +95,9 @@ class smart_one_c_message extends ftp_and_tago_function {
         } //end of for 
         
         
+        object_with_datas_to_insert_on_tago.metadata.lat = latitude;
+        object_with_datas_to_insert_on_tago.metadata.lon = longitude;
+
         return object_with_datas_to_insert_on_tago;
     }  
 
@@ -108,7 +111,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
      Decode_truncate_message(hexa_code, esn_value, file_content){//private method
-          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC", xml:file_content} };
+          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC"} };
           let hex_2_bin = ("00000000" + (parseInt(hexa_code.substring(0,2), 16)).toString(2)).slice(-8);
           let submask_data = parseInt(hex_2_bin.substring(2),2);
 
@@ -138,7 +141,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
    Decode_type3_message(hexa_code, esn_value, file_content){//private method
-        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, metadata:{message_type:"03",  device_type:"SOC", xml:file_content} };
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, metadata:{message_type:3,  device_type:"SOC"} };
 
      //this code needs to be fixed, instead of convert to binary and after convert to deciaml, my code is going to convert direct of hex to decimal
         if(subtype()){
@@ -149,7 +152,7 @@ class smart_one_c_message extends ftp_and_tago_function {
               return decode_diagnostic_message("bateryMessage");//The replace battery message has a format almost identical to the diagnostic message. Therefore I Can use the same function to decode the content
             
             }else if(subtype() === "CONTACT SERVICE PROVIDER MESSAGE"){
-              return {provider_message: hexa_code, metadata:{message_type:"03", sub_type:""}};
+              return {provider_message: hexa_code, metadata:{message_type:3, sub_type:""}};
 
             }else if(subtype() === "ACCUMULATE/COUNT MESSAGE"){console.log("accumulate")
               return AccumulateCountMessage();

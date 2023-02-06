@@ -26,15 +26,20 @@ const axios = require('axios');
                       file_content = "";
                       file_content = file_content + chunk;
 
-                      if(!file_content.includes("</payload>")){ this.delete_file_from_ftp() };
 
+                      if(!file_content.includes("</payload>")){ resolve(undefined) }
                       
-                    
-                      let stu_messages =  file_content !== undefined 
-                                                           ? file_content.split("</stuMessage>")
-                                                           : undefined
-                      stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
-                      resolve(stu_messages); 
+                      else{
+                          let stu_messages =  file_content !== undefined 
+                                                              ? file_content.split("</stuMessage>")
+                                                              : undefined
+
+                          stu_messages !== undefined && stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.
+                          resolve(stu_messages); 
+
+                       }
+
+                
                   });     
 
                  
@@ -48,11 +53,9 @@ const axios = require('axios');
 
 
 
-
-
     async delete_file_from_ftp(){//public method
-
-      return new Promise((resolve,reject) => {
+      
+       return new Promise((resolve,reject) => {
           this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
             if(err){
               return err;
@@ -61,7 +64,7 @@ const axios = require('axios');
             }
     
         })
-      })
+      }) 
 
       
    }
@@ -71,13 +74,14 @@ const axios = require('axios');
 
 
 
-     async insert_on_tago(decoded_code, account_tago, Device, device_id){//public method
+     async insert_on_tago(decoded_code, account_tago, Device, device_id, stu_message){//public method
 
         let device_token = (await account_tago.devices.paramList(device_id)).find(parameter => parameter.key === "device_token").value;
         const tago_device = new Device({ token: device_token });
         decoded_code.location !== undefined && this.add_google_link(decoded_code)
         decoded_code.location !== undefined && await this.add_google_address(decoded_code);
         
+        decoded_code.metadata.xml = stu_message;
         return console.log(await tago_device.sendData(decoded_code));
       }
  
