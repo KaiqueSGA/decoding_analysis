@@ -14,6 +14,10 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
   
+//This method is responsible per find out the message type so then decode its.
+//Parameters: This method receive 2 parameters: 
+//"file_content" --> The purpose of this parameter is: get the hexadecimal code of its file; 
+//"esn_value" --> The purpose of this parameter is: send the esn value to te decode functions to thereby insert them on the bucket;  "ESN --> Number responsible per identify the device"
     decode(file_content, esn_value){//public method
 
         let hexa_code = this.get_hexa_code_from_ftp_file(file_content);
@@ -45,7 +49,6 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-
      Decode_default_message(hexa_code, esn_value, file_content){//private method
         
         const latitude = this.decode_lat(hexa_code.substring(2,8));
@@ -62,19 +65,36 @@ class smart_one_c_message extends ftp_and_tago_function {
             if(current_byte.length === 2){
               byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
               let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
-              let value_of_each_bit = {  "002":{batery:0}, "012":{batery:1},    "003":{gps_data:0},"013":{gps_data:1},    "014":{missed_input1:true},"015":{missed_input2:true},   "006":"","016":"",   "007": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; } ,  "017": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    object_with_datas_to_insert_on_tago["metadata"]["gps_fail_counter"] = bin_2_decimal; },   "700":{input_1_change:false},"710":{input_1_change:true},   "701":{input_1_state:false},"711":{input_1_state:true},   "702":{input_2_change:false},"712":{input_2_change:true},   "703":{Input_2_state:false},"713":{Input_2_state:true},   "704":"","714":"","705":"","715":"","706":"","716":"", "707": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal}, "717": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return object_with_datas_to_insert_on_tago["metadata"]["sub_type"] = bin_2_decimal},    "803":{vibration_state_changed:0},"813":{vibration_state_changed:1},   "804":{vibration_Unit:0},"814":{vibration_Unit:1},   "805":{type_location:0},"815":{type_location:1},   "806":{in_motion:false},   "816":{in_motion:true},   "807":{gps_accuracy:0},"817":{gps_accuracy:1}}
+              let value_of_each_bit = {  
+                  "02": (binary_value) => { return {batery_change:binary_value} },
+                  "03": (binary_value) => { return {gps_data:binary_value} },
+                  "04": (binary_value) => { return {missed_input1:binary_value} },
+                  "05": (binary_value) => { return {missed_input2:binary_value} },   
+                  "07": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    return {gps_fail_counter: bin_2_decimal} } , 
+                  "70": (binary_value) => { return{input_1_change:binary_value} },
+                  "71": (binary_value) => { return{input_1_state:binary_value} },
+                  "72": (binary_value) => { return{input_2_change:binary_value} },
+                  "73": (binary_value) => { return{Input_2_state:binary_value} }, 
+                  "77": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return {sub_type: bin_2_decimal} },
+                  "83": (binary_value) => { return {vibration_state_changed:binary_value} },
+                  "84": (binary_value) => { return{vibration_Unit:binary_value} },
+                  "85": (binary_value) => { return{type_location:binary_value} },
+                  "86": (binary_value) => { return{in_motion:binary_value} },
+                  "87": (binary_value) => { return {gps_accuracy:binary_value} }
+                }
               
             
-                const decode_binary_code = ( ()=> {
+                const decode_binary_code = ( ()=> { 
 
                     for(let i = 0; i < current_byte_2_bin.length; i++ ){
-                      let values = `${byte_array.indexOf(current_byte)}${current_byte_2_bin[i]}${i}`;//0 ==> byte position, 0 ==> binary value, 0 ==> binary position
+                      let values = `${byte_array.indexOf(current_byte)}${i}`;//0 ==> byte position, 0 ==> binary position
 
                       values !== "000" && values !== "001"                                               
                                               && ( () => {
 
-                                                  let bit_value = typeof(value_of_each_bit[values]) === "function"  ?value_of_each_bit[values]()  :value_of_each_bit[values];
+                                                  let bit_value = typeof(value_of_each_bit[values]) === "function"  ?value_of_each_bit[values]( Number(current_byte_2_bin[i]) )  :value_of_each_bit[values];
 
+                                                  console.log(bit_value)
                                                   if(bit_value !== undefined){
                                                     Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
                                                    }
