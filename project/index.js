@@ -115,7 +115,7 @@
 
                             decoded_code = smart_one_c_message.decode(stu_message, esn_value); 
                             decoded_code !== undefined && await smart_one_c_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message);
-                            decoded_code !== undefined && await smart_one_c_message.delete_file_from_ftp(); 
+                            //decoded_code !== undefined && await smart_one_c_message.delete_file_from_ftp(); 
                             
                             
                           }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){

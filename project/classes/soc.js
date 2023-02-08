@@ -1,6 +1,9 @@
-//Dev: Kaique YUdji
-//Date:27/12/2022
-//Code description: In this file, i'm decoding the xml files storaged per the ftp server. The code that I created is first creating all function and after call them
+/*  
+  Dev: Kaique YUdji
+  Date:27/12/2022
+  Code description: In this file, i'm decoding the xml files storaged per the ftp server. 
+  This code will insert on TAGO.IO the field with its binary value so then the TAGO.IO payload finish of decode the values.
+*/
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
 
 
@@ -25,17 +28,16 @@ class smart_one_c_message extends ftp_and_tago_function {
         //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
         let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
         let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
-        let bin_2_decimal = parseInt(hex_2_bin.substring(0,2),2);//I'm cutting the string(hex_to_bin) because i need just of two first bits to define the type of my message;
-                    
+          
 
-        if(bin_2_decimal === 0){console.log("default")
-          return this.Decode_default_message(hexa_code,  esn_value, file_content);
+        if(byte_that_countains_the_type_of_message === "02"){console.log("raw message")
+          //return this.Decode_default_message(hexa_code,  esn_value);
 
-        }else if(bin_2_decimal === 1){console.log("truncate")
-          return this.Decode_truncate_message(hexa_code, esn_value, file_content);
+        }else if(hex_2_bin[7] === "0"){console.log("default message (atlasTrax)")
+          return this.Decode_default_message(hexa_code, esn_value);
 
-        }else if(bin_2_decimal === 3){console.log("type3")
-          return this.Decode_type3_message(hexa_code, esn_value, file_content);
+        }else if(hex_2_bin[7] === "3"){console.log("type3")
+          return this.Decode_type3_message(hexa_code, esn_value);
         } 
 
 
@@ -48,58 +50,63 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-
-     Decode_default_message(hexa_code, esn_value, file_content){//private method
+     //This method will decode default messages. It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
+     //This method will return an object with the fields and its binary values;
+     Decode_default_message(hexa_code, esn_value){//private method
         
         const latitude = this.decode_lat(hexa_code.substring(2,8));
         const longitude = this.decode_lng(hexa_code.substring(8,14));
         
 
         let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:0, device_type:"SOC"} }; //this object will be filled during of decoding of bits of each byte
+        
+        /* Variable that i'm going to use to decode the values of the byte  */
         let current_byte = "";
         let byte_array = new Array();
+
+
+
+        /* Each field of this object is formated per 2 characters. The first: Byte position, The second: Binary position. Through of byte position and of binary position we can identify its value */
+        let value_of_each_bit = {  
+          "01": (binary_value) => { return {input_2:binary_value} },//0 --> Closed, 1 --> Opened
+          "02": (binary_value) => { return {input_1:binary_value} },//0 --> Closed, 1 --> Opened
+          "03": (binary_value) => { return {external_power:binary_value} },//0 --> Battery, 1 --> Ext.Pwr
+          "04": (binary_value) => { return {vibration:binary_value} },//0 --> Steady, 1 --> in Vibration 
+          "07": (current_byte_2_bin) => { return {bearing: "teste"} } , 
+          "70": (current_byte_2_bin) => { return{speed:`${current_byte_2_bin} --> ${parseInt(current_byte_2_bin,2)}`} },//0 --> Didn't trigger the message, 1 --> Triggered message
+          "86": (binary_value) => { return {time:"teste"} },    //0 --> At rest, 1 --> In-motion
+          "87": (binary_value) => { return {batery_change:binary_value} } //0 --> Good, 1 --> Replace
+        }
+
+
+
 
           for(let i= 0; i < hexa_code.length; i++){
             current_byte += hexa_code[i];
           
-            if(current_byte.length === 2){
-              byte_array.push(current_byte)//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes. 
+            if(current_byte.length === 2){//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes.
+              byte_array.push(current_byte) 
               let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
-              let value_of_each_bit = {  
-                  "02": (binary_value) => { return {batery_change:binary_value} },
-                  "03": (binary_value) => { return {gps_data:binary_value} },
-                  "04": (binary_value) => { return {missed_input1:binary_value} },
-                  "05": (binary_value) => { return {missed_input2:binary_value} },   
-                  "07": () => { let binary_code = current_byte_2_bin[6] + current_byte_2_bin[7];   let bin_2_decimal = parseInt(binary_code,2);    return {gps_fail_counter: bin_2_decimal} } , 
-                  "70": (binary_value) => { return{input_1_change:binary_value} },
-                  "71": (binary_value) => { return{input_1_state:binary_value} },
-                  "72": (binary_value) => { return{input_2_change:binary_value} },
-                  "73": (binary_value) => { return{Input_2_state:binary_value} }, 
-                  "77": () => { let binary_code = current_byte_2_bin[4] + current_byte_2_bin[5] + current_byte_2_bin[6] + current_byte_2_bin[7]; let bin_2_decimal = parseInt(binary_code,2); return {sub_type: bin_2_decimal} },
-                  "83": (binary_value) => { return {vibration_state_changed:binary_value} },
-                  "84": (binary_value) => { return{vibration_Unit:binary_value} },
-                  "85": (binary_value) => { return{type_location:binary_value} },
-                  "86": (binary_value) => { return{in_motion:binary_value} },
-                  "87": (binary_value) => { return {gps_accuracy:binary_value} }
-                }
-              
-            
-                const decode_binary_code = ( ()=> { 
 
+              
+                const decode_binary_code = ( ()=> { 
+                
                     for(let i = 0; i < current_byte_2_bin.length; i++ ){
                       let values = `${byte_array.indexOf(current_byte)}${i}`;//0 ==> byte position, 0 ==> binary position
 
-                      values !== "000" && values !== "001"                                               
-                                              && ( () => {
+                      values !== "00"                                              
+                                        && ( () => {
 
-                                                  let bit_value = typeof(value_of_each_bit[values]) === "function"  ?value_of_each_bit[values]( Number(current_byte_2_bin[i]) )  :value_of_each_bit[values];
+                                            let bit_value = typeof(value_of_each_bit[values]) === "function"  
+                                                                              ? value_of_each_bit[values]( values === "07" || values === "70" || values === "86" ? current_byte_2_bin : Number(current_byte_2_bin.split("").reverse().join("")[i]))//Aqui eu  estou invertando os bits para que a posição "1" do manual seja de fato a posição 1   
+                                                                              : undefined;
 
-                                                  console.log(bit_value)
-                                                  if(bit_value !== undefined){
-                                                    Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
-                                                   }
+                                            //console.log(bit_value)
+                                              if(bit_value !== undefined){
+                                                Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
+                                              }
 
-                                                } )()
+                                          } )()
 
 
                       values = ""; 
@@ -112,6 +119,7 @@ class smart_one_c_message extends ftp_and_tago_function {
               current_byte_2_bin = "";
               current_byte = "";
             } 
+
         } //end of for 
         
         
@@ -129,25 +137,27 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-
-     Decode_truncate_message(hexa_code, esn_value, file_content){//private method
+     //This method will decode default messages. It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
+     //This method will return an object with the fields and its binary values;
+     Decode_truncate_message(hexa_code, esn_value){//private method
           let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC"} };
           let hex_2_bin = ("00000000" + (parseInt(hexa_code.substring(0,2), 16)).toString(2)).slice(-8);
-          let submask_data = parseInt(hex_2_bin.substring(2),2);
+
 
           const decoded_lat = this.decode_lat(`${hexa_code.substring(2,4)}${hexa_code.substring(4,6)}${hexa_code.substring(6,8)}`);
           const decoded_lng = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
 
+
+         /* in this code block I'm assigning values values to the response object*/
           hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = 0 : object_with_datas_to_insert_on_tago.metadata.sub_type = 1
           object_with_datas_to_insert_on_tago.location.coordinates = [decoded_lng, decoded_lat];
           object_with_datas_to_insert_on_tago.metadata.user_data = hexa_code.substring(14); 
-          object_with_datas_to_insert_on_tago.metadata.submask_data = submask_data;
-
+          object_with_datas_to_insert_on_tago.metadata.submask_data = parseInt(hex_2_bin.substring(2),2);
           object_with_datas_to_insert_on_tago.metadata.lat = decoded_lat;
           object_with_datas_to_insert_on_tago.metadata.lon = decoded_lng;
 
+
           return object_with_datas_to_insert_on_tago;
-      
     }
 
 
@@ -160,7 +170,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-   Decode_type3_message(hexa_code, esn_value, file_content){//private method
+   Decode_type3_message(hexa_code, esn_value){//private method
         let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, metadata:{message_type:3,  device_type:"SOC"} };
 
      //this code needs to be fixed, instead of convert to binary and after convert to deciaml, my code is going to convert direct of hex to decimal
