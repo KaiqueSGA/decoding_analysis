@@ -68,13 +68,19 @@ class smart_one_c_message extends ftp_and_tago_function {
 
         /* Each field of this object is formated per 2 characters. The first: Byte position, The second: Binary position. Through of byte position and of binary position we can identify its value */
         let value_of_each_bit = {  
+          "00": (binary_value) => { return {message_type:binary_value} }, 
           "01": (binary_value) => { return {input_2:binary_value} },//0 --> Closed, 1 --> Opened
           "02": (binary_value) => { return {input_1:binary_value} },//0 --> Closed, 1 --> Opened
           "03": (binary_value) => { return {external_power:binary_value} },//0 --> Battery, 1 --> Ext.Pwr
           "04": (binary_value) => { return {vibration:binary_value} },//0 --> Steady, 1 --> in Vibration 
-          "07": (current_byte_2_bin) => { return {bearing: "teste"} } , 
-          "70": (current_byte_2_bin) => { return{speed:`${current_byte_2_bin} --> ${parseInt(current_byte_2_bin,2)}`} },//0 --> Didn't trigger the message, 1 --> Triggered message
-          "86": (binary_value) => { return {time:"teste"} },    //0 --> At rest, 1 --> In-motion
+          "07": (current_byte_2_bin) => { let cardinal_direction = parseInt(current_byte_2_bin.substring(5),2);  return {bearing: cardinal_direction === 0 ?"N" :cardinal_direction === 1?"NE" :cardinal_direction === 2 ?"E" :cardinal_direction === 3 ?"SE" :cardinal_direction === 4 ?"S" :cardinal_direction === 5 ?"SW"  :cardinal_direction === 6  ?"W" :cardinal_direction === 7 && "NW" } } , 
+          "70": (current_byte_2_bin) => { return {speed:parseInt(current_byte_2_bin,2)} } ,//0 --> Didn't trigger the message, 1 --> Triggered message
+          
+          
+          "86": (current_byte_2_bin) => {return {time:"em desenvolvimento"} },    //0 --> At rest, 1 --> In-motion
+          
+          
+          
           "87": (binary_value) => { return {batery_change:binary_value} } //0 --> Good, 1 --> Replace
         }
 
