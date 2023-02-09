@@ -77,7 +77,12 @@ class smart_one_c_message extends ftp_and_tago_function {
           "70": (current_byte_2_bin) => { return {speed:parseInt(current_byte_2_bin,2)} } ,//0 --> Didn't trigger the message, 1 --> Triggered message
           
           
-          "86": (current_byte_2_bin) => {return {time:"em desenvolvimento"} },    //0 --> At rest, 1 --> In-motion
+          "86": (current_byte_2_bin) => {
+            let date_teste = new Date(1675952955 * 1000); 
+            let utc_date = new Date(date_teste.getFullYear() ,date_teste.getMonth(), date_teste.getDay());console.log(utc_date)
+
+            return {time:"em desenvolvimento"}
+           },    //0 --> At rest, 1 --> In-motion
           
           
           
