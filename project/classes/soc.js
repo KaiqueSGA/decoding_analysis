@@ -83,25 +83,28 @@ class smart_one_c_message extends ftp_and_tago_function {
               let utc_time = new Date(1676037531 * 1000); 
               let utc_date = new Date(utc_time); 
 
-              let gw_time = ( (utc_date.getUTCHours()  *  3600) + (utc_time.getUTCMinutes() * 60) + utc_date.getUTCSeconds() ); 
-              let gw_mod = gw_time  % 720;
+              console.log(utc_time);
 
-              let gps_time = ( gps_value * 6 + (-17) );
+              let gw_seconds = (utc_time.getUTCHours() * 3600 + utc_time.getUTCMinutes() * 60 + utc_time.getUTCSeconds());
 
-              if( gps_time > gw_mod ){
-                gps_time -= 720;
-              }
+              let gps_seconds = (gps_value * 6) ;
 
-              gps_time += (gw_time / 720) * 720; console.log("final value:" + gps_time)
+              let gw_chunk = parseInt(gw_seconds / 720);
 
-              let final_time = new Date(gps_time * 1000); 
-               
-              final_time.setDate( utc_date.getDate() );
-              final_time.setFullYear( utc_date.getFullYear() );
-              final_time.setMonth( utc_date.getMonth() );
+              let gps_time = ( (gw_chunk * 720) + gps_seconds ) * 1000;
 
-              console.log(final_time)
-              return {time:final_time}
+              let result_time = new Date(gps_time); console.log(result_time);
+
+              let result_date_time = new Date(utc_date.getFullYear(), utc_date.getMonth(), utc_date.getDate(), result_time.getHours(),result_time.getMinutes(), result_time.getSeconds()) 
+              
+              if (result_date_time > utc_time) result_date_time = utc_time;
+
+              console.log(result_date_time)
+              
+
+             return {time:result_date_time};
+
+
            },//0 --> At rest, 1 --> In-motion
           
           
