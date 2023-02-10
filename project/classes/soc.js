@@ -36,7 +36,7 @@ class smart_one_c_message extends ftp_and_tago_function {
         }else if(hex_2_bin[7] === "0"){console.log("default message (atlasTrax)")
           return this.Decode_default_message(hexa_code, esn_value);
 
-        }else if(hex_2_bin[7] === "3"){console.log("type3")
+        }else if(hex_2_bin[7] === "1"){console.log("type3")
           return this.Decode_type3_message(hexa_code, esn_value);
         } 
 
@@ -78,11 +78,25 @@ class smart_one_c_message extends ftp_and_tago_function {
           
           
           "86": (current_byte_2_bin) => {
-            let date_teste = new Date(1675952955 * 1000); 
-            let utc_date = new Date(date_teste.getFullYear() ,date_teste.getMonth(), date_teste.getDay());console.log(utc_date)
+              let gps_value = parseInt(current_byte_2_bin.substring(0,7),2);  console.log(current_byte_2_bin, current_byte_2_bin.substring(0,7)); console.log(gps_value)
 
-            return {time:"em desenvolvimento"}
-           },    //0 --> At rest, 1 --> In-motion
+              let utc_time = new Date(1676037531 * 1000); 
+              let utc_date = new Date(utc_time.getFullYear() ,utc_time.getMonth(), utc_time.getDay(), utc_time.getHours(), utc_time.getMinutes(),utc_time.getSeconds() , utc_time.getMilliseconds());
+
+              let gw_time = ( (utc_date.getUTCHours()  *  3600) + (utc_time.getUTCMinutes() * 60) + utc_date.getUTCSeconds() ); 
+              let gw_mod = gw_time  % 720;
+
+              let gps_time = ( gps_value * 6 + (-17) );
+
+              if( gps_time > gw_mod ){
+                gps_time -= 720;
+              }
+
+              gps_time += (gw_time / 720) * 720; console.log("final value:" + gps_time)
+
+              let final_time = new Date(gps_time * 1000) 
+              return {time:`${final_time.getUTCHours()}:${final_time.getUTCMinutes()}:${final_time.getUTCSeconds()} / ${utc_date.getFullYear()}/${utc_date.getUTCMonth()}/${utc_date.getUTCDay()}`}
+           },//0 --> At rest, 1 --> In-motion
           
           
           
