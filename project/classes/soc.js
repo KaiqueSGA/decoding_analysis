@@ -78,10 +78,10 @@ class smart_one_c_message extends ftp_and_tago_function {
           
           
           "86": (current_byte_2_bin) => {
-              let gps_value = parseInt(current_byte_2_bin.substring(0,7),2);  console.log(current_byte_2_bin, current_byte_2_bin.substring(0,7)); console.log(gps_value)
+              let gps_value = parseInt(current_byte_2_bin.substring(1,8),2);  console.log(current_byte_2_bin, current_byte_2_bin.substring(1,8)); console.log(gps_value)
 
               let utc_time = new Date(1676037531 * 1000); 
-              let utc_date = new Date(utc_time.getFullYear() ,utc_time.getMonth(), utc_time.getDay(), utc_time.getHours(), utc_time.getMinutes(),utc_time.getSeconds() , utc_time.getMilliseconds());
+              let utc_date = new Date(utc_time); 
 
               let gw_time = ( (utc_date.getUTCHours()  *  3600) + (utc_time.getUTCMinutes() * 60) + utc_date.getUTCSeconds() ); 
               let gw_mod = gw_time  % 720;
@@ -94,8 +94,14 @@ class smart_one_c_message extends ftp_and_tago_function {
 
               gps_time += (gw_time / 720) * 720; console.log("final value:" + gps_time)
 
-              let final_time = new Date(gps_time * 1000) 
-              return {time:`${final_time.getUTCHours()}:${final_time.getUTCMinutes()}:${final_time.getUTCSeconds()} / ${utc_date.getFullYear()}/${utc_date.getUTCMonth()}/${utc_date.getUTCDay()}`}
+              let final_time = new Date(gps_time * 1000); 
+               
+              final_time.setDate( utc_date.getDate() );
+              final_time.setFullYear( utc_date.getFullYear() );
+              final_time.setMonth( utc_date.getMonth() );
+
+              console.log(final_time)
+              return {time:final_time}
            },//0 --> At rest, 1 --> In-motion
           
           
