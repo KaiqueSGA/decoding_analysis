@@ -30,14 +30,24 @@ class smart_one_c_message extends ftp_and_tago_function {
         let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
           
 
-        if(byte_that_countains_the_type_of_message === "02"){console.log("raw message")
+        const catch_unix_time = () => {
+
+            // the indexOf function will return the first position of string:"<unixTime>". In other words, the positio of: "<". Therefore i need to add 10 the response this function, add 10 the response, the code will catch the first position of my unixtime value 
+            let identify_tag_unix_time = file_content.indexOf("<unixTime>") + 10;
+            let unix_time_value = file_content.substring(identify_tag_unix_time, file_content.indexOf("</unixTime>"));
+            return unix_time_value;
+
+        }
+
+
+        if(byte_that_countains_the_type_of_message === "02"){console.log("raw message",  byte_that_countains_the_type_of_message)
           //return this.Decode_default_message(hexa_code,  esn_value);
 
-        }else if(hex_2_bin[7] === "0"){console.log("default message (atlasTrax)")
-          return this.Decode_default_message(hexa_code, esn_value);
+        }else if(hex_2_bin[7] === "0"){console.log("default message (atlasTrax)", byte_that_countains_the_type_of_message)
+          return this.Decode_default_message(hexa_code, esn_value, catch_unix_time());
 
-        }else if(hex_2_bin[7] === "1"){console.log("type3")
-          return this.Decode_type3_message(hexa_code, esn_value);
+        }else if(hex_2_bin[7] === "1"){console.log("type3", byte_that_countains_the_type_of_message)
+          return this.Decode_type3_message(hexa_code, esn_value, catch_unix_time());
         } 
 
 
@@ -52,7 +62,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
      //This method will decode default messages. It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
      //This method will return an object with the fields and its binary values;
-     Decode_default_message(hexa_code, esn_value){//private method
+     Decode_default_message(hexa_code, esn_value, unix_time){//private method
         
         const latitude = this.decode_lat(hexa_code.substring(2,8));
         const longitude = this.decode_lng(hexa_code.substring(8,14));
@@ -73,39 +83,36 @@ class smart_one_c_message extends ftp_and_tago_function {
           "02": (binary_value) => { return {input_1:binary_value} },//0 --> Closed, 1 --> Opened
           "03": (binary_value) => { return {external_power:binary_value} },//0 --> Battery, 1 --> Ext.Pwr
           "04": (binary_value) => { return {vibration:binary_value} },//0 --> Steady, 1 --> in Vibration 
-          "07": (current_byte_2_bin) => { let cardinal_direction = parseInt(current_byte_2_bin.substring(5),2);  return {bearing: cardinal_direction === 0 ?"N" :cardinal_direction === 1?"NE" :cardinal_direction === 2 ?"E" :cardinal_direction === 3 ?"SE" :cardinal_direction === 4 ?"S" :cardinal_direction === 5 ?"SW"  :cardinal_direction === 6  ?"W" :cardinal_direction === 7 && "NW" } } , 
+          "07": (current_byte_2_bin) => { let cardinal_direction = parseInt(current_byte_2_bin.substring(5),2);  return {bearing: cardinal_direction } } , 
           "70": (current_byte_2_bin) => { return {speed:parseInt(current_byte_2_bin,2)} } ,//0 --> Didn't trigger the message, 1 --> Triggered message
           
           
           "86": (current_byte_2_bin) => {
-              let gps_value = parseInt(current_byte_2_bin.substring(1,8),2);  console.log(current_byte_2_bin, current_byte_2_bin.substring(1,8)); console.log(gps_value)
+              let gps_value = parseInt(current_byte_2_bin.substring(1,8),2); 
 
-              let utc_time = new Date(1676037531 * 1000); 
+              let utc_time = new Date(unix_time * 1000); 
               let utc_date = new Date(utc_time); 
 
-              console.log(utc_time);
 
-              let gw_seconds = (utc_time.getUTCHours() * 3600 + utc_time.getUTCMinutes() * 60 + utc_time.getUTCSeconds());
+              let gw_seconds = (utc_time.getUTCHours() * 3600 + utc_time.getUTCMinutes() * 60 + utc_time.getUTCSeconds());// --> unixtime value
 
-              let gps_seconds = (gps_value * 6) ;
+              let gps_seconds = (gps_value * 6) ;// --> multiplico o valor do gps por 6 pois quando o tempo foi codificado pelo device, o valor foi dividido por 6 para encaixar dentro de 6 bits 
 
-              let gw_chunk = parseInt(gw_seconds / 720);
+              let gw_chunk = parseInt(gw_seconds / 720);// --> "descobrindo" a quantidade de chunks que eu tenho dentro do meu unixtime
 
-              let gps_time = ( (gw_chunk * 720) + gps_seconds ) * 1000;
+              let gps_time = ( (gw_chunk * 720) + gps_seconds ) * 1000;//descobrindo o valor do meu chunk dentro do unixtime
 
-              let result_time = new Date(gps_time); console.log(result_time);
+              let result_time = new Date(gps_time); 
 
-              let result_date_time = new Date(utc_date.getFullYear(), utc_date.getMonth(), utc_date.getDate(), result_time.getHours(),result_time.getMinutes(), result_time.getSeconds()) 
+              let result_date_time = new Date(utc_date.getFullYear(), utc_date.getMonth(), utc_date.getDate(), result_time.getHours(), result_time.getMinutes(), result_time.getSeconds()) 
               
               if (result_date_time > utc_time) result_date_time = utc_time;
-
-              console.log(result_date_time)
               
 
              return {time:result_date_time};
 
 
-           },//0 --> At rest, 1 --> In-motion
+           },
           
           
           
@@ -235,7 +242,7 @@ class smart_one_c_message extends ftp_and_tago_function {
               for(let i= 0; i < hexa_code.length; i++){
                     current_byte += hexa_code[i];
 
-                    if(current_byte.length === 2){//console.log(current_byte)
+                    if(current_byte.length === 2){
                       byte_array.push(current_byte);
                       let current_byte_2_bin = ("00000000" + (parseInt(current_byte, 16)).toString(2)).slice(-8);
                       let value_of_each_bit = { "103":() => {  return { number_of_transmissions:parseInt(current_byte_2_bin[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2)}  },   "113":()=>{ return { number_of_transmissions:parseInt(current_byte_2_bin[0] + current_byte_2_bin[1] + current_byte_2_bin[2] + current_byte_2_bin[3], 2)}  },           "104": {battery_condition:"Good batery"}, "114":{battery_condition:"Replace batery"},             "105":{gps_subsystem_fault: "GPS system OK."}, "115":{gps_subsystem_fault: "Fault"},             "106":{transmitter_subsystem_fault: "Trasnmitter OK."}, "116":{transmitter_subsystem_fault: "Fault"},             "107":{scheduler_subsystem_fault: "Transmitter OK."}, "117":{scheduler_subsystem_fault: "Fault"},        "2":() => {  return { min_interval:parseInt(current_byte_2_bin,2) }  },          "3": () => {  return {max_interval:parseInt(current_byte_2_bin,2)}  },     "4":() => { return {gps_mean_search_time:parseInt(current_byte_2_bin,2)} },       "6":() => { let byte5_2_bin = ("00000000" + (parseInt(byte_array[5], 16)).toString(2)).slice(-8);  let byte6_to_bin = ("00000000" + (parseInt(byte_array[6], 16)).toString(2)).slice(-8);     return { gps_fails:parseInt(byte5_2_bin,2) + parseInt(byte6_to_bin,2)}  },       "8":() => { let byte7_2_bin = ("00000000" + (parseInt(byte_array[7], 16)).toString(2)).slice(-8);  let byte8_to_bin = ("00000000" + (parseInt(byte_array[8], 16)).toString(2)).slice(-8);     return { transmission_numbers: (parseInt(byte7_2_bin,2) + parseInt(byte8_to_bin,2)) }  }   }
@@ -344,7 +351,7 @@ class smart_one_c_message extends ftp_and_tago_function {
           function subtype(){
               let byte_that_countains_the_subtype_of_message = hexa_code.substring(0,2); 
               let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_subtype_of_message, 16)).toString(2)).slice(-8); 
-              let response;  console.log(hexa_code, byte_that_countains_the_subtype_of_message,  hex_2_bin, hex_2_bin.substring(2,8), parseInt(hex_2_bin.substring(2,8),2));
+              let response; 
 
 
               parseInt(hex_2_bin.substring(2,8),2) === 21 && ( () => { response = "DIAGNOSTIC MESSAGE"} )();
