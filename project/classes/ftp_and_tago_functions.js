@@ -31,7 +31,7 @@ const axios = require('axios');
                       
                       else{
                           let stu_messages =  file_content !== undefined 
-                                                              ? file_content.split("</stuMessage>")
+                                                              ? file_content.split("</stuMessage>")//Each tag </stuMessage> represents one message sent by device
                                                               : undefined
 
                           stu_messages !== undefined && stu_messages.pop();//I'm removing the las position because the last position doesn't have anything.

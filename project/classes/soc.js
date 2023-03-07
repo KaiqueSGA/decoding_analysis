@@ -98,7 +98,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
               let gps_seconds = (gps_value * 6) ;// --> multiplico o valor do gps por 6 pois quando o tempo foi codificado pelo device, o valor foi dividido por 6 para encaixar dentro de 6 bits 
 
-              let gw_chunk = parseInt(gw_seconds / 720);// --> "descobrindo" a quantidade de chunks que eu tenho dentro do meu unixtime
+              let gw_chunk = parseInt(gw_seconds / 720);
 
               let gps_time = ( (gw_chunk * 720) + gps_seconds ) * 1000;//descobrindo o valor do meu chunk dentro do unixtime
 
@@ -122,7 +122,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-          for(let i= 0; i < hexa_code.length; i++){
+          for(let i= 0; i < hexa_code.length; i++){//This for it's responsible per "passing" per all bytes of my message
             current_byte += hexa_code[i];
           
             if(current_byte.length === 2){//A byte is formated per 2 characters of code hexadecimal, therefore I added the byte equals the length of 2 characters the array of bytes.
@@ -142,7 +142,7 @@ class smart_one_c_message extends ftp_and_tago_function {
                                                                               ? value_of_each_bit[values]( values === "07" || values === "70" || values === "86" ? current_byte_2_bin : Number(current_byte_2_bin.split("").reverse().join("")[i]))//Aqui eu  estou invertando os bits para que a posição "1" do manual seja de fato a posição 1   
                                                                               : undefined;
 
-                                            //console.log(bit_value)
+                                            
                                               if(bit_value !== undefined){
                                                 Object.assign(object_with_datas_to_insert_on_tago.metadata, bit_value);                              
                                               }
@@ -189,7 +189,7 @@ class smart_one_c_message extends ftp_and_tago_function {
           const decoded_lng = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
 
 
-         /* in this code block I'm assigning values values to the response object*/
+         /* in this code block I'm assigning values to the response object*/
           hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = 0 : object_with_datas_to_insert_on_tago.metadata.sub_type = 1
           object_with_datas_to_insert_on_tago.location.coordinates = [decoded_lng, decoded_lat];
           object_with_datas_to_insert_on_tago.metadata.user_data = hexa_code.substring(14); 

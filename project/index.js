@@ -35,17 +35,18 @@
                       
                       if(file_list.length === 0){
                           connection.destroy();console.log("WITHOUT files in FTP");
+                          process.kill(process.pid, 'SIGINT');
 
                       }else{
                           console.log('reading files...');
-                          Changing_algorithm(file_list,connection,account)
+                          Changing_algorithm(file_list,connection,account);
                       }
               
               })
 
           });
 
-          connection.connect(access_config_ftp_server)
+          connection.connect(access_config_ftp_server);
           
 
       }catch(err){
@@ -94,7 +95,7 @@
 
 
 
-                    for await(let stu_message of file_content){
+                    for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message.
                         let esn_value = cacth_esn(stu_message); 
         
                         
@@ -105,7 +106,7 @@
                           })
                           
             
-                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){//console.log(file_content)
+                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
                             let decoded_code;
 
                             decoded_code = smart_one_c_message.decode(stu_message, esn_value); 
@@ -123,9 +124,6 @@
                   
 
                   
-                    
-
-                   
                 }catch(err){
                   console.log(`Something went wrong  in the file${ftp_file.name}...`, err);continue
                 }
@@ -133,7 +131,8 @@
                    
             }
     
-
+             console.log("finished");
+             process.kill(process.pid, 'SIGINT');
     }//end of function
  
 
