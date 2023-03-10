@@ -5,7 +5,9 @@
 
   const { Analysis,Account, Utils, Services, Device } = require("@tago-io/sdk");
   const Ftp_server = require("ftp");
+
   const soc_messages = require('./classes/soc.js');
+  const stx_messages = require('./classes/stx.js');
 
 
 
@@ -55,7 +57,7 @@
     
   };
   
-  module.exports = new Analysis(Decoding_analysis, { token: "a7925d96-99bc-4a70-b8f1-b7061a777dbd" });
+  module.exports = new Analysis(Decoding_analysis, { token: "850a5a75-c905-4d98-89d3-0e3155a71a9f" });
 
 
 
@@ -99,14 +101,14 @@
                         let esn_value = cacth_esn(stu_message); 
         
                         
-                          let filter = { tags:[ {key:"ESN", value:esn_value} ]}
+                          let filter = { tags:[ {key:"ESN", value:esn_value} ]};
                           let device = await account_tago.devices.list({
                             page: 1,
                             filter,
-                          })
+                          });
                           
             
-                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){
+                          if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("soc");
                             let decoded_code;
 
                             decoded_code = smart_one_c_message.decode(stu_message, esn_value); 
@@ -114,8 +116,13 @@
                             decoded_code !== undefined && await smart_one_c_message.delete_file_from_ftp(); 
                             
                             
-                          }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STXX') ){
-          
+                          }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
+                            const stx_message = new stx_messages(ftp_file.name, ftp_connection);
+                            let decoded_code;
+
+                            decoded_code = stx_message.decode(stu_message, esn_value);
+                            decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, decoded_code.value);
+                            //decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
           
                          }else{
                            //provision algorithim
