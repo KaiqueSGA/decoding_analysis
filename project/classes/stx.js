@@ -10,8 +10,8 @@ class stx_message extends ftp_and_tago_function{
   }
 
      decode(file_content, esn_value){ 
-       let ns;
-       let ew;
+       
+      let cardinal_point;
        let origin;
        let JAMM;
        let mode;
@@ -19,29 +19,40 @@ class stx_message extends ftp_and_tago_function{
        let batery;
        let lastSPD;
 
+
+
           const hex2bin = (hex) => {
             return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
           }
 
+          const cacthPAY = (data) =>{
+            let help = data.indexOf("<payload");
+            let firstTag = data.indexOf(">",help);
+            let secondTag = data.indexOf("</payload>",firstTag);
+          
+            return data.substring(firstTag + 3,secondTag );
+          }
+
+
 
           const cactchBin = () =>{
-            let binHEX = file_content.substring(12,14);
+            let binHEX = cacthPAY(file_content).substring(12,14);
             let binary = hex2bin(binHEX);
             
            
             for(let i = 0; i <= 5; i++){
           
                   if(i === 0 && binary[i] === "0"){
-                    ns = 'Sul';
+                    cardinal_point = 'south';//sul
 
                   }else if( i === 0 && binary[i] === "1"){
-                    ns = 'Norte';
+                    cardinal_point = 'north';//norte
 
                   }else if(i === 1 && binary[i] === '0'){
-                    ew = "weast";
+                    cardinal_point = "weast";//oeste
 
                   }else if(i === 1 && binary[i] === '1'){
-                    ew = "east";
+                    cardinal_point = "east";//leste
 
                   }else if(i === 2 && binary[i] === '0'){
                     origin ="GPS"
@@ -93,14 +104,14 @@ class stx_message extends ftp_and_tago_function{
 
     
           const catchLat = () =>{          
-            let latHEX= file_content.substring(0,6); 
+            let latHEX= cacthPAY(file_content).substring(0,6); 
             
           
             let lat = parseInt(latHEX,16);//estou convertendo para inteiro um valor hexa, por isso eu coloco o 16 como parâmetro
             lat = String(lat);
           
           
-            let tira2casasLat = ns === "Sul" 
+            let tira2casasLat = cardinal_point === "south" 
                             ?  "-" + lat.substring(0,2)
                             :  lat.substring(0,2);
           
@@ -114,30 +125,33 @@ class stx_message extends ftp_and_tago_function{
           
           
           const catchLng = () =>{
-            let lngHEX = file_content.substring(6,12);
+            let lngHEX = cacthPAY(file_content).substring(6,12);
             
             let lng = parseInt(lngHEX,16);
             lng = String(lng);
           
             
-            let tira2casasLng = ew === "weast" 
+            let tira2casasLng = cardinal_point === "weast" 
                             ?  "-" + lng.substring(0,2)
                             :  lng.substring(0,2);
           
             let restDecimalLng = lng.substring(2);
           
-          
+            
             return (tira2casasLng + "." + restDecimalLng);
             
           }
 
 
+          
           cactchBin();
           let latitude = Number(catchLat());
-          let longitude = Number(catchLng()); 
+          let longitude = Number(catchLng());  
 
+          console.log(latitude,longitude);
+          
 
-          return {
+           return {
             variable: 'ESN',
             value: esn_value,
             location:{ type:"Point", coordinates:[longitude,latitude] },
@@ -150,7 +164,7 @@ class stx_message extends ftp_and_tago_function{
               direction: direction,
               jamm: JAMM
             }
-          }
+          } 
 
     }
 
