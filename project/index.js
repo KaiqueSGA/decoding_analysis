@@ -61,9 +61,9 @@
                       const stx_message = new stx_messages(ftp_file.name, ftp_connection);
                       let decoded_code;
 
-                      decoded_code = stx_message.decode(stu_message, esn_value);
+                      decoded_code = stx_message.decode(stu_message, esn_value);console.log(decoded_code);
                       decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, decoded_code.value);
-                      //decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
+                      decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
     
                    }else{
                      //provision algorithim
