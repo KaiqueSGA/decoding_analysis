@@ -79,9 +79,8 @@ class stx_message extends ftp_and_tago_function{
 
       }
      
-      for(let i = 0; i <= 3; i++){//i --> binary position / binary[i] --> binary value
-         value_of_each_byte[String(i)](binary[i])
-        }
+      //i --> binary position / binary[i] --> binary value
+      for(let i = 0; i <= 3; i++){ value_of_each_byte[String(i)](binary[i]) };
 
 
         let dir = binary.substring(5);
@@ -96,8 +95,8 @@ class stx_message extends ftp_and_tago_function{
         arr["111"] = "NW";//Noroeste - Northwest
         object_array.push({direction: arr[dir]}); 
       
+
         let byte8 = this.hex_2_bin(file_content.substring(14,16));
-      
         if(byte8.substring(0,1) === '0'){
           object_array.push({batery: "normal"});
         }else{
@@ -144,37 +143,6 @@ class stx_message extends ftp_and_tago_function{
 
 
 
-
-
-
-     async insert_on_tago(decoded_code, account_tago, Device, esn_value){
-        try{
-
-            let filter = {
-              tags:[ { key:"ESN", value:esn_value } ]
-           }
-  
-            //this code is searching the device trough of ESN that is in the xml file.
-             const searching_device_on_tago = await account_tago.devices.list( {page:1, filter} );
-  
-             if(searching_device_on_tago === undefined || searching_device_on_tago === null || searching_device_on_tago.length === 0){
-               return `Dispositivo que corresponde a ESN:${payload.value} não existe.`
-             } 
-
-             //this block code is catching the device id.
-             let id_device = searching_device_on_tago[0].id;
-             let devices_tag_list = await account_tago.devices.paramList(id_device);
-             let device_token = devices_tag_list.find(item => item.key === 'device_token').value;
-             
-       
-             const myDevice = new Device({ token: device_token });
-             return console.log(await myDevice.sendData(decoded_code));     
-            
-
-      }catch(err){
-
-      }
-  }
 
 }
 

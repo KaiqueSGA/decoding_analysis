@@ -61,8 +61,8 @@
                       const stx_message = new stx_messages(ftp_file.name, ftp_connection);
                       let decoded_code;
 
-                      decoded_code = stx_message.decode(stu_message, esn_value);console.log(decoded_code);
-                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, decoded_code.value);
+                      decoded_code = stx_message.decode(stu_message, esn_value);
+                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message);
                       decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
     
                    }else{
@@ -94,7 +94,7 @@
 
 
     /* this function will be the first to be called */
-  async function Decoding_analysis(context, scope) {
+  async function Decoding_analysis(context, scope) {console.log(scope)
       try{
           /* constants responsibles per access functions of tago.io */
           const envVars = Utils.envToJson(context.environment);
@@ -108,9 +108,8 @@
               password:"Stx3@sga2022"
           }
 
-      
-          const connection = new Ftp_server();
 
+          const connection = new Ftp_server();
           connection.on('ready', function() {
 
               connection.list("*.xml", function(err,file_list){
@@ -129,9 +128,9 @@
               })
 
           });
-
           connection.connect(access_config_ftp_server);
           
+
 
       }catch(err){
           console.log(err)
