@@ -1,4 +1,3 @@
-const { default: ConsoleService } = require("@tago-io/sdk/out/modules/Services/Console");
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
 
 
