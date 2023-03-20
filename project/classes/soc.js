@@ -17,15 +17,15 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
   
-//This method is responsible per find out the message type so then decode its.
-//Parameters: This method receive 2 parameters: 
+
+
 //"file_content" --> The purpose of this parameter is: get the hexadecimal code of its file; 
 //"esn_value" --> The purpose of this parameter is: send the esn value to te decode functions to thereby insert them on the bucket;  "ESN --> Number responsible per identify the device"
     decode(file_content, esn_value){//public method
 
         let hexa_code = this.get_hexa_code_from_ftp_file(file_content);
 
-        //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the typeof message through of first byte.
+        //The GlobalStar has 3 differents types of messages: Default Message, Diagnostic Message and StoreCount Message. We can find out the type of message through of first byte.
         let byte_that_countains_the_type_of_message = hexa_code.substring(0,2);
         let hex_2_bin = ("00000000" + (parseInt(byte_that_countains_the_type_of_message, 16)).toString(2)).slice(-8);
           
@@ -60,7 +60,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-     //This method will decode default messages. It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
+     // hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
      //This method will return an object with the fields and its binary values;
      Decode_default_message(hexa_code, esn_value, unix_time){//private method
         
@@ -78,14 +78,20 @@ class smart_one_c_message extends ftp_and_tago_function {
 
         /* Each field of this object is formated per 2 characters. The first: Byte position, The second: Binary position. Through of byte position and of binary position we can identify its value */
         let value_of_each_bit = {  
-          "00": (binary_value) => { return {message_type:binary_value} }, 
-          "01": (binary_value) => { return {input_2:binary_value} },//0 --> Closed, 1 --> Opened
-          "02": (binary_value) => { return {input_1:binary_value} },//0 --> Closed, 1 --> Opened
-          "03": (binary_value) => { return {external_power:binary_value} },//0 --> Battery, 1 --> Ext.Pwr
-          "04": (binary_value) => { return {vibration:binary_value} },//0 --> Steady, 1 --> in Vibration 
-          "07": (current_byte_2_bin) => { let cardinal_direction = parseInt(current_byte_2_bin.substring(5),2);  return {bearing: cardinal_direction } } , 
-          "70": (current_byte_2_bin) => { return {speed:parseInt(current_byte_2_bin,2)} } ,//0 --> Didn't trigger the message, 1 --> Triggered message
           
+          "00": (binary_value) => { return {message_type:binary_value} }, 
+          
+          "01": (binary_value) => { return {input_2:binary_value} },//0 --> Closed, 1 --> Opened
+          
+          "02": (binary_value) => { return {input_1:binary_value} },//0 --> Closed, 1 --> Opened
+          
+          "03": (binary_value) => { return {external_power:binary_value} },//0 --> Battery, 1 --> Ext.Pwr
+          
+          "04": (binary_value) => { return {vibration:binary_value} },//0 --> Steady, 1 --> in Vibration 
+          
+          "07": (current_byte_2_bin) => { let cardinal_direction = parseInt(current_byte_2_bin.substring(5),2);  return {bearing: cardinal_direction } } , 
+          
+          "70": (current_byte_2_bin) => { return {speed:parseInt(current_byte_2_bin,2)} } ,//0 --> Didn't trigger the message, 1 --> Triggered message
           
           "86": (current_byte_2_bin) => {
               let gps_value = parseInt(current_byte_2_bin.substring(1,8),2); 
@@ -110,11 +116,7 @@ class smart_one_c_message extends ftp_and_tago_function {
               
 
              return {time:result_date_time};
-
-
            },
-          
-          
           
           "87": (binary_value) => { return {batery_change:binary_value} } //0 --> Good, 1 --> Replace
         }
@@ -153,8 +155,8 @@ class smart_one_c_message extends ftp_and_tago_function {
                       values = ""; 
 
                     }
-                
-              }) () 
+               }) () 
+
 
           
               current_byte_2_bin = "";
@@ -178,7 +180,7 @@ class smart_one_c_message extends ftp_and_tago_function {
 
 
 
-     //This method will decode default messages. It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
+     //It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
      //This method will return an object with the fields and its binary values;
      Decode_truncate_message(hexa_code, esn_value){//private method
           let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC"} };

@@ -74,15 +74,13 @@ class stx_message extends ftp_and_tago_function{
         "0":(byte) => { byte === "0" ?object_array.push({cardinal_position: 'south'}) :object_array.push({cardinal_position: 'north'}) },
         "1":(byte) => { byte === "0" ?object_array.push({cardinal_position: "weast"}) :object_array.push({cardinal_point: "east"})},
         "2":(byte) => { byte === "0" ?object_array.push({origin: "GPS"}) :object_array.push({origin: "GPS-DR"}) },
-        "3":(byte) => { byte === "0" ?object_array.push({mode: "normal"}) :object_array.push({mode: "jamming"})}
-
+        "3":(byte) => { byte === "0" ?object_array.push({mode: 2}) :object_array.push({mode: "jamming"})}
       }
      
       //i --> binary position / binary[i] --> binary value
       for(let i = 0; i <= 3; i++){ value_of_each_byte[String(i)](binary[i]) };
 
 
-        let dir = binary.substring(5);
         let arr = []
         arr["000"] = "N";//Norte - North
         arr["001"] = "NE";//Nordeste - Noth east
@@ -92,7 +90,7 @@ class stx_message extends ftp_and_tago_function{
         arr["101"] = "SW";//Sudoeste - south-west
         arr["110"] = "W";//Oeste - West
         arr["111"] = "NW";//Noroeste - Northwest
-        object_array.push({direction: arr[dir]}); 
+        object_array.push({direction: arr[binary.substring(5)]}); 
       
 
         let byte8 = this.hex_2_bin(file_content.substring(14,16));
