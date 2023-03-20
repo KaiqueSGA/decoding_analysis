@@ -95,9 +95,9 @@ class stx_message extends ftp_and_tago_function{
 
         let byte8 = this.hex_2_bin(file_content.substring(14,16));
         if(byte8.substring(0,1) === '0'){
-          object_array.push({batery: "normal"});
+          object_array.push({battery: "normal"});
         }else{
-          object_array.push({batery: "low"});
+          object_array.push({battery: "low"});
         }
       
         let byte9 =  file_content.substring(16,18);
@@ -128,7 +128,7 @@ class stx_message extends ftp_and_tago_function{
               spd: bin_values_decoded[6].lastSPD,
               direction: bin_values_decoded[4].direction,
               
-              batery: bin_values_decoded[5].batery,
+              battery: bin_values_decoded[5].battery,
 
               mode: bin_values_decoded[3].mode,
               media: 'STX',
