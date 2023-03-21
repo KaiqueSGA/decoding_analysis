@@ -15,6 +15,8 @@
 
 
   async function Changing_algorithm(file_list, ftp_connection, account_tago){
+   
+    let timeStamp;
 
       const cacth_esn = (data) =>{//what is ESN? Read in our README.
           let help = data.indexOf("<esn>");
@@ -22,6 +24,18 @@
           let secondTag = data.indexOf("</esn>",firstTag);
           return data.substring(firstTag + 1,secondTag)
       };
+
+
+      const catchTimeStamp = (data) => {
+        data = data[0];
+        let helpp = data.indexOf("timeStamp");
+        let firstTagg = data.indexOf("=",helpp);
+      
+        let secondTag = data.indexOf("T",firstTagg);
+        timeStamp = data.substring(firstTagg+2,secondTag+1);
+      }
+
+
       
     
         for await(let ftp_file of file_list){
@@ -29,7 +43,7 @@
 
                 const ftp_functions = new external_functions(ftp_file.name, ftp_connection);//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
                 let file_content = await ftp_functions.get_file_content(); //this function retruns an array with all messages that are inside of xml file
-              
+                catchTimeStamp(file_content);
 
                 if(file_content === undefined){
                   console.log("weren't possible get the content of file");
@@ -62,8 +76,8 @@
                       let decoded_code;
 
                       decoded_code = stx_message.decode(stu_message, esn_value);
-                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message);
-                      decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
+                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message, timeStamp);
+                      //decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
     
                    }else{
                      //provision algorithim
@@ -94,7 +108,7 @@
 
 
     /* this function will be the first to be called */
-  async function Decoding_analysis(context, scope) {console.log(scope)
+  async function Decoding_analysis(context, scope) {
       try{
           /* constants responsibles per access functions of tago.io */
           const envVars = Utils.envToJson(context.environment);
@@ -138,7 +152,7 @@
     
   };
   
-  module.exports = new Analysis(Decoding_analysis, { token: "850a5a75-c905-4d98-89d3-0e3155a71a9f" });
+  module.exports = new Analysis(Decoding_analysis, { token: "67937c9b-f516-448c-aad2-c6369fbf8e7a" });
 
 
 

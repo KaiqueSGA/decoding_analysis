@@ -74,7 +74,7 @@ const axios = require('axios');
 
 
 
-     async insert_on_tago(decoded_code, account_tago, Device, device_id, stu_message){//public method
+     async insert_on_tago(decoded_code, account_tago, Device, device_id, stu_message, time){//public method
 
         let device_token = (await account_tago.devices.paramList(device_id)).find(parameter => parameter.key === "device_token").value;
         const tago_device = new Device({ token: device_token });
@@ -82,7 +82,8 @@ const axios = require('axios');
         decoded_code.location !== undefined && await this.add_google_address(decoded_code);
         
         decoded_code.metadata.xml = stu_message;
-        return console.log(await tago_device.sendData(decoded_code));
+        time ? decoded_code.metadata.time_stamp = time :''; 
+        return console.log(await tago_device.sendData(decoded_code).catch(err => console.log(err)));
       }
  
 
@@ -95,11 +96,17 @@ const axios = require('axios');
 
       async add_google_address(decoded_code){//private method
         const request = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${decoded_code.location.coordinates[1]}&lon=${decoded_code.location.coordinates[0]}`);
-        let address = request.data.address;
+        
+        if(request.data.address !== undefined){
+          let address = request.data.address;
 
-        return address.quarter === undefined
-                            ? decoded_code.metadata.address = `${address.road} - ${address.suburb} - ${address.state} - ${address.city} - ${address.postcode}`
-                            : decoded_code.metadata.address = `${address.road} - ${address.quarter} - ${address.state} - ${address.city} - ${address.postcode}`;
+          return address.quarter === undefined
+                              ? decoded_code.metadata.address = `${address.road} - ${address.suburb} - ${address.state} - ${address.city} - ${address.postcode}`
+                              : decoded_code.metadata.address = `${address.road} - ${address.quarter} - ${address.state} - ${address.city} - ${address.postcode}`; 
+        }else{
+          decoded_code.metadata.address = "no data available";
+        }
+        
       }
 }
 
