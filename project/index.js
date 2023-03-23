@@ -15,8 +15,6 @@
 
 
   async function Changing_algorithm(file_list, ftp_connection, account_tago){
-   
-    let timeStamp;
 
       const cacth_esn = (data) =>{//what is ESN? Read in our README.
           let help = data.indexOf("<esn>");
@@ -26,13 +24,21 @@
       };
 
 
-      const catchTimeStamp = (data) => {
+      const catch_time_stamp = (data) => {console.log(data)
         data = data[0];
         let helpp = data.indexOf("timeStamp");
         let firstTagg = data.indexOf("=",helpp);
       
         let secondTag = data.indexOf("T",firstTagg);
-        timeStamp = data.substring(firstTagg+2,secondTag+1);
+        time_stamp = data.substring(firstTagg+2,secondTag+1);
+
+        let date_time_elements = time_stamp.split(" ");// The elements are divided in 3 categories. 0=date; 1=time; 2=time format
+        let date_elements = date_time_elements[0].split("/");// the date elements are divided in 3 categories. 0=day; 1=month; 2=year;
+        let time_elements = date_time_elements[1].split(":");//the time elements are dividide in 3 categories. 0=hour; 1=minute; 2:second;     
+      
+        
+        let time_stamp = new Date(`${date_elements[2]}-${date_elements[1]}-${date_elements[0]}T${time_elements[0]}:${time_elements[1]}:${time_elements[2]}Z`);console.log(time_stamp);
+        return time_stamp;
       }
 
 
@@ -43,7 +49,8 @@
 
                 const ftp_functions = new external_functions(ftp_file.name, ftp_connection);//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
                 let file_content = await ftp_functions.get_file_content(); //this function retruns an array with all messages that are inside of xml file
-                catchTimeStamp(file_content);
+                let time_stamp = catch_time_stamp(file_content);
+
 
                 if(file_content === undefined){
                   console.log("weren't possible get the content of file");
@@ -76,7 +83,7 @@
                       let decoded_code;
 
                       decoded_code = stx_message.decode(stu_message, esn_value);
-                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message, timeStamp);
+                      decoded_code !== undefined && await stx_message.insert_on_tago(decoded_code, account_tago, Device, device[0].id, stu_message, time_stamp);
                       //decoded_code !== undefined && await stx_message.delete_file_from_ftp(); 
     
                    }else{
