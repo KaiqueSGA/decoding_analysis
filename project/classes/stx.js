@@ -94,12 +94,14 @@ class stx_message extends ftp_and_tago_function{
       
 
         let byte8 = this.hex_2_bin(file_content.substring(14,16));
+
+        
         if(byte8.substring(0,1) === '0'){
-          object_array.push({battery: "normal"});
-        }else{
-          object_array.push({battery: "low"});
-        }
+           object_array.push({battery: "normal"});
+
+        }else{ object_array.push({battery: "low"}) };
       
+
         let byte9 =  file_content.substring(16,18);
         object_array.push({lastSPD: parseInt(byte9,16)});
         
