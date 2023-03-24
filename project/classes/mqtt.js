@@ -1,4 +1,5 @@
 const ftp_and_tago_function = require("./ftp_and_tago_functions");
+const location_api = require("./Apis/location");
 
 
 class mqtt_message /* extends ftp_and_tago_function */{
@@ -392,8 +393,8 @@ class mqtt_message /* extends ftp_and_tago_function */{
 
 
 
-  fncMQTT = ()=> {//public method
-    
+  decode = async(scope)=> {//public method
+   
             var values_array = this.esn.value.split(";");//The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
                 
             this.esn.variable = values_array[0] //Rename VAR
@@ -412,7 +413,7 @@ class mqtt_message /* extends ftp_and_tago_function */{
                 this.esn.metadata[field_key.toLowerCase()] = field_value;
 
                   
-                //Fields that need be calculated to find out the value
+                //Fields that need be calculated to find out its value
                 if(field_key.startsWith("battery_volts")) { this.add_battery_field(field_value); }
                 else if(field_key.startsWith("cops")) { this.add_operator_field(field_value); }
                 else if(field_key.startsWith("jamm")) { this.add_jamming_state(field_value); }
@@ -425,13 +426,36 @@ class mqtt_message /* extends ftp_and_tago_function */{
                 else if (field_key.startsWith("psti20")) { this.get_message_origin(field_value); }
              }
 
+             delete this.esn.metadata.mqtt_topic; //clean mqtt_topic
+             delete this.esn.metadata.EOF; //clean EOF mark
                 
             //Adjust variable date/time
             if(this.esn.metadata.RTC) {this.esn.time = this.esn.metadata.RTC};
 
-             delete this.esn.metadata.mqtt_topic; //clean mqtt_topic
-             delete this.esn.metadata.EOF; //clean EOF mark
+             
+          
             
+            if(typeof(this.esn.location.lat) === "number" && typeof(this.esn.location.lng) === "number"){//If this coordinate exist, I´m going to use it in the Google localization functions
+              const location_function = new location_api();
+              this.esn.metadata.address =  await location_function.get_address_through_coordinates(this.esn.location.lat, this.esn.location.lng);
+            }  
+ 
+            else if(this.esn.metadata.mac0){
+                const location_function = new location_api();
+                const mac_coordinates = await location_function.get_coordinates_through_mac_datas(["mac0","mac1","mac2"], scope);
+                this.esn.metadata.address = await location_function.get_address_through_coordinates(mac_coordinates.lat, mac_coordinates.lng);
+                
+                this.esn.location.lat = mac_coordinates.lat;
+                this.esn.location.lng = mac_coordinates.lng;
+                this.esn.metadata.lat = mac_coordinates.lat;
+                this.esn.metadata.lon = mac_coordinates.lng;
+
+            } 
+
+
+
+
+
             return this.esn;
 
     }
@@ -439,13 +463,4 @@ class mqtt_message /* extends ftp_and_tago_function */{
 
 
 
-const analyze_message = new mqtt_message(
-    {
-    variable: "payload",
-    value: "esn;0-4242117;model,AT-G1018;hmv,0.1M4;fmv,0.8M4;mode,2;media,GSM/GPRS;rtc,2023-03-21 13:16:52;battery_volts,3.84;imei,869951032048823;iccid,8944500601200071406F;cops,CLARO BR;jamm,+SJDR: NO JAMMING;rf_model,HC-12;rf_channel,001;rmc$GNRMC,131654.000,A,2335.72988,S,04638.18778,W,000.0,303.7,210323,,,A,V*04;vtg,$GNVTG,303.7,T,,M,000.0,N,000.1,K,A*15;zda,$GNZDA,131654.000,21,03,2023,00,00*4F;psti20,$PSTI,20,0,1,1,0,A,1,1,6.74,100.00,-0.00,0.00*74;psti60$PSTI,060,0,V,-37.23,1.91,17.35,,,,,,,,*71;psti63,$PSTI,063,G,0.78,-0.07,0.36,C,0.78,-0.07,0.36*03;psti65,$PSTI,065,A,0.41,7.85,5.92,N,0.00,0.00,0.00*0F;psti70,PSTI,070,T,I,43.6*2B;mac0,ce:32:e5:21:0b:80;mac1,cc:32:e5:11:0b:80;mac2,08:a7:c0:76:13:10;lbs_mode,LTE;lbs0,LBS0,9610,290,-96,-59,-19,-6,46111,28560395,724,05,255;lbs1,LBS1,9610,394,-98,-67,-20,-6;lbs2,LBS2,9610,25,-103,-67,-20,-6",
-    metadata: {
-        mqtt_topic: "MQTT"
-    }
-})
-
-console.log(analyze_message.fncMQTT());
+module.exports = mqtt_message;

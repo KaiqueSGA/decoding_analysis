@@ -9,6 +9,8 @@
   const external_functions = require('./classes/ftp_and_tago_functions');
   const stx_messages = require('./classes/stx.js');
   const soc_messages = require('./classes/soc.js');
+  const mqtt_messages = require('./classes/mqtt.js');
+  const tago_functions = require('./classes/Apis/tago');
 
 
 
@@ -30,14 +32,14 @@
         let firstTagg = data.indexOf("=",helpp);
       
         let secondTag = data.indexOf("T",firstTagg);
-        time_stamp = data.substring(firstTagg+2,secondTag+1);
+        let time_stamp = data.substring(firstTagg+2,secondTag+1);
 
         let date_time_elements = time_stamp.split(" ");// The elements are divided in 3 categories. 0=date; 1=time; 2=time format
         let date_elements = date_time_elements[0].split("/");// the date elements are divided in 3 categories. 0=day; 1=month; 2=year;
         let time_elements = date_time_elements[1].split(":");//the time elements are dividide in 3 categories. 0=hour; 1=minute; 2:second;     
       
         
-        let time_stamp = new Date(`${date_elements[2]}-${date_elements[1]}-${date_elements[0]}T${time_elements[0]}:${time_elements[1]}:${time_elements[2]}Z`);console.log(time_stamp);
+         time_stamp = new Date(`${date_elements[2]}-${date_elements[1]}-${date_elements[0]}T${time_elements[0]}:${time_elements[1]}:${time_elements[2]}Z`);console.log(time_stamp);
         return time_stamp;
       }
 
@@ -56,6 +58,7 @@
                   console.log("weren't possible get the content of file");
                   await smart_one_c_message.delete_file_from_ftp(); continue;
                 }
+
 
 
               for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message. The file content can has many stu_messages, therefore i need of more one loopig
@@ -115,11 +118,31 @@
 
 
     /* this function will be the first to be called */
-  async function Decoding_analysis(context, scope) {
+  async function Decoding_analysis(context, scope) {console.log(scope.length);
       try{
           /* constants responsibles per access functions of tago.io */
           const envVars = Utils.envToJson(context.environment);
           const account = new Account({ token: envVars.account_token });
+          
+
+          if(scope.length !== 0){ console.log("MQTT")
+
+              const identify_device_on_tago = async() => {
+                let esn = scope[0].value.split(";")[1];
+  
+                let filter = { tags:[ {key:"ESN", value:esn} ]}; 
+                return await account.devices.list( { page:1, filter } );
+              }
+
+            
+              const mqtt_message = new mqtt_messages(scope[0]);
+              const tago_func = new tago_functions(account); 
+
+              let device_id = await identify_device_on_tago();
+              let decoded_code = await mqtt_message.decode(scope);
+              decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
+              return;
+          }
 
 
           let access_config_ftp_server = {
