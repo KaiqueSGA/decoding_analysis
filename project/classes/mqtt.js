@@ -434,19 +434,20 @@ class mqtt_message /* extends ftp_and_tago_function */{
 
              
           
+            if(this.esn.location !== undefined){
+              if(typeof(this.esn.location.lat) === "number" && typeof(this.esn.location.lng) === "number"){//If this coordinate exist, I´m going to use it in the Google localization functions
+                const location_function = new location_api();
+                this.esn.metadata.address =  await location_function.get_address_through_coordinates(this.esn.location.lat, this.esn.location.lng);
+              }
+            }
             
-            if(typeof(this.esn.location.lat) === "number" && typeof(this.esn.location.lng) === "number"){//If this coordinate exist, I´m going to use it in the Google localization functions
-              const location_function = new location_api();
-              this.esn.metadata.address =  await location_function.get_address_through_coordinates(this.esn.location.lat, this.esn.location.lng);
-            }  
- 
             else if(this.esn.metadata.mac0){
                 const location_function = new location_api();
                 const mac_coordinates = await location_function.get_coordinates_through_mac_datas(["mac0","mac1","mac2"], scope);
                 this.esn.metadata.address = await location_function.get_address_through_coordinates(mac_coordinates.lat, mac_coordinates.lng);
                 
-                this.esn.location.lat = mac_coordinates.lat;
-                this.esn.location.lng = mac_coordinates.lng;
+                if(this.esn.location !== undefined){ this.esn.location.lat = mac_coordinates.lat; }
+                if(this.esn.location !== undefined){ this.esn.location.lng = mac_coordinates.lng; }
                 this.esn.metadata.lat = mac_coordinates.lat;
                 this.esn.metadata.lon = mac_coordinates.lng;
 
