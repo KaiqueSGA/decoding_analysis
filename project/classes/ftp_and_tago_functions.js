@@ -82,7 +82,7 @@ const axios = require('axios');
         decoded_code.location !== undefined && await this.add_google_address(decoded_code);
         
         decoded_code.metadata.xml = stu_message;
-        time ? decoded_code.time = time :''; console.log(decoded_code)
+        time ? decoded_code.time = time :''; 
         return console.log(await tago_device.sendData(decoded_code).catch(err => console.log(err)));
       }
  

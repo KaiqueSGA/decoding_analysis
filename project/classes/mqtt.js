@@ -149,7 +149,7 @@ class mqtt_message /* extends ftp_and_tago_function */{
 
     var tmpSPLIT = tmpSTR.split(",");
 
-    if (tmpSPLIT[12] == "N") return;
+    //if (tmpSPLIT[12] == "N") return;
     /*
     Mode indicator D Mode indicator
     ‘A’ = Autonomous mode
@@ -450,6 +450,7 @@ class mqtt_message /* extends ftp_and_tago_function */{
                 if(this.esn.location !== undefined){ this.esn.location.lng = mac_coordinates.lng; }
                 this.esn.metadata.lat = mac_coordinates.lat;
                 this.esn.metadata.lon = mac_coordinates.lng;
+                this.esn.metadata.link = "https://www.google.com/maps/search/?api=1&query=" + mac_coordinates.lat + "," + mac_coordinates.lng;
 
             } 
 
