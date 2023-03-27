@@ -83,8 +83,8 @@ class stx_message {
 
 
     let byte8 = this.hex_2_bin(file_content.substring(14, 16));
-    if(byte8.substring(0, 1) === "0") { object_array.push({ battery: "normal" }); }//trocar substring por posição [0]
-    else{ object_array.push({ battery: "low" }); }
+    if(byte8.substring(0, 1) === "0") { object_array.push({ battery_change: false }); }//trocar substring por posição [0]
+    else{ object_array.push({ battery_change: true }); }
 
 
     let byte9 = file_content.substring(16, 18);
@@ -118,7 +118,7 @@ class stx_message {
         spd: bin_values_decoded[6].lastSPD,
         direction: bin_values_decoded[4].direction,
 
-        battery: bin_values_decoded[5].battery,
+        battery_volts: (bin_values_decoded[5].battery_change === true ?"low"  :"normal"),
 
         mode: bin_values_decoded[3].mode,
         media: "STX",
