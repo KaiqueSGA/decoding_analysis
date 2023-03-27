@@ -4,23 +4,10 @@
   Code description: In this file, i'm decoding the xml files storaged per the ftp server. 
   This code will insert on TAGO.IO the field with its binary value so then the TAGO.IO payload finish of decode the values.
 */
-const ftp_and_tago_function = require("./ftp_and_tago_functions");
 
 
+class smart_one_c_message{
 
-
-class smart_one_c_message extends ftp_and_tago_function {
-
-  constructor(xml_file_name, ftp_connection){
-    super(xml_file_name, ftp_connection);
-  }
-
-
-  
-
-
-//"file_content" --> The purpose of this parameter is: get the hexadecimal code of its file; 
-//"esn_value" --> The purpose of this parameter is: send the esn value to te decode functions to thereby insert them on the bucket;  "ESN --> Number responsible per identify the device"
     decode(file_content, esn_value){//public method
 
         let hexa_code = this.get_hexa_code_from_ftp_file(file_content);

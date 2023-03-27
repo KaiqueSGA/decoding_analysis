@@ -32,7 +32,7 @@ class location_apis {
 
 
 
-      parseToObjectLBS = (keyTag,scope,dataType) => {
+      prepare_lbs_parameters_for_requesition = (keyTag,scope,dataType) => {
         if(keyTag === undefined){ return; }
 
         let lbsList = new Array();   
@@ -172,12 +172,11 @@ class location_apis {
 
 
 
-     get_coordinates_through_lbs_datas = async(list) =>{
-        
+     get_coordinates_through_lbs_datas = async(lbs_fields, scope, data_type) =>{
          try{
-             /* if the mode isn´t the same the wifi, the mode will be LBS */
-             /* I create a array with several objects, this array will be used how parameter in the google API  */
-                 let cellTowers = list.map((lbs) => {
+                 let list = this.prepare_lbs_parameters_for_requesition(lbs_fields, scope, data_type);
+             
+                 let cellTowers = list.map((lbs) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
                     return {
                       cellId: mode.endsWith("/lte") === true ?lbs.cellid :parseInt(lbs.cellid,16),
                       locationAreaCode :mode.endsWith("/lte") === true ?parseInt(lbs.lac,10) :parseInt(lbs.lac,16),
