@@ -43,11 +43,11 @@ class location_apis {
               
                   let arrayFieldsLbs = (scope[0].metadata[key]).split(',');
                   if (arrayFieldsLbs.length < 3) { return; }
-                  if (arrayFieldsLbs[4] === "FFFF" || arrayFieldsLbs[7] === "0000") { return; }
+                  if (arrayFieldsLbs[4] === "FFFF" || arrayFieldsLbs[7] === "0000") { return; };
       
                   if (arrayFieldsLbs.length > 10) {
 
-                    if(dataType === "/lte"){
+                    if(dataType === "lte"){
                         lbsList.push({
                             cell: arrayFieldsLbs[0],
                             earfcn: arrayFieldsLbs[1],
@@ -80,7 +80,7 @@ class location_apis {
                         }
 
                   }else {
-                    if(dataType === "/lte"){
+                    if(dataType === "lte"){
                         lbsList.push({
                       cell: arrayFieldsLbs[0],
                       earfcn: arrayFieldsLbs[1],
@@ -177,20 +177,20 @@ class location_apis {
                  let list = this.prepare_lbs_parameters_for_requesition(lbs_fields, scope, data_type);
              
                  let cellTowers = list.map((lbs) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
-                    return {
-                      cellId: mode.endsWith("/lte") === true ?lbs.cellid :parseInt(lbs.cellid,16),
-                      locationAreaCode :mode.endsWith("/lte") === true ?parseInt(lbs.lac,10) :parseInt(lbs.lac,16),
-                      mobileCountryCode: lbs.mcc,
-                      mobileNetworkCode: lbs.mnc,
-                      };
-                    });
+                      return {
+                         cellid: data_type === "lte" ?  parseInt(lbs.cellid) :parseInt(lbs.cellid),
+                         locationAreaCode :data_type === "lte" ?parseInt(lbs.lac) :parseInt(lbs.lac),
+                         mobileCountryCode: parseInt(lbs.mcc),
+                         mobileNetworkCode: parseInt(lbs.mnc),
+                        };
+                  });
           
-      
-            
+                  console.log(cellTowers[0])
+                  
                  const lbs0 = list.find((x) => x.cell === "LBS0");
-                 if(!lbs0){ return {lat:0, lng:0} };
+                 if(!lbs0){ return {lat:0, lng:0} };console.log(parseInt(lbs0.mcc), parseInt(lbs0.mnc))
           
-      
+            
                     
             /*  Google api will return geography coordinates accordingly with the lbs Datas returned of const cellTowers(objects array) */
                 const result = await axios({
@@ -200,14 +200,24 @@ class location_apis {
                       key: "AIzaSyDq2lk5DBMUg2ymbDimMunBbvQwk-4MeLg",
                     },
                     data: {
-                       homeMobileCountryCode: lbs0.mcc,
-                       homeMobileNetworkCode: lbs0.mnc,
-                       radioType: mode.endsWith("/lte") === true ?"LTE" :"gsm",//define o tipo de dados que a minha api vai receber GSM | LTE
+                       homeMobileCountryCode: 310,
+                       homeMobileNetworkCode: 410,
+                       radioType:"gsm",//define o tipo de dados que a minha api vai receber GSM | LTE
                        carrier: "Vodafone",
-                       considerIp: false,
-                       cellTowers:mode.endsWith("/lte") === true ? [cellTowers[0]] :cellTowers
+                       considerIp: true,
+                       cellTowers: [
+                        {
+                          cellid: 170402199,       
+                          locationAreaCode: 35632,
+                          mobileCountryCode: 310, 
+                          mobileNetworkCode: 410,
+                          age: 0,
+                          signalStrength: -60,
+                          timingAdvance: 15   
+                        }
+                       ]
                       }
-                    });
+                    }).catch((err) => console.log(err))
                             
                           
                     if(!result) { return {lat:0, lng:0} };

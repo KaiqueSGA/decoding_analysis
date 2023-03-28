@@ -165,7 +165,7 @@ class mqtt_message {
 
     var tmpSPLIT = tmpSTR.split(",");
 
-    //if (tmpSPLIT[12] == "N") return;
+    if (tmpSPLIT[12] == "N") return;
     /*
     Mode indicator D Mode indicator
     ‘A’ = Autonomous mode
@@ -415,9 +415,10 @@ class mqtt_message {
 
   
   decode = async (scope) => {//public method
-    
+  
     var values_array = this.esn.value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
 
+    this.esn.metadata.raw_data = scope[0].value;
     this.esn.variable = values_array[0]; //Rename VAR
     this.esn.value = values_array[1]; //Update Value
 
@@ -444,7 +445,7 @@ class mqtt_message {
         else if (field_key.startsWith("psti20")) { this.get_message_origin(field_value);}
     }
 
-
+    
     delete this.esn.metadata.mqtt_topic; //clean mqtt_topic
     delete this.esn.metadata.EOF; //clean EOF mark
 
@@ -472,9 +473,9 @@ class mqtt_message {
       this.esn.metadata.link = "https://www.google.com/maps/search/?api=1&query=" + mac_coordinates.lat + "," + mac_coordinates.lng;
     }
 
-    else if(this.esn.metadata.lbs0){
+    else if(this.esn.metadata.lbs0){console.log("HELLO")
       const location_functions = new location();
-      const lbs_coordinates = await location_functions.get_coordinates_through_lbs_datas();
+      const lbs_coordinates = await location_functions.get_coordinates_through_lbs_datas(["lbs0","lbs1","lbs2"], scope, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm");console.log(lbs_coordinates)
       this.esn.metadata.address = await location_functions.get_address_through_coordinates(lbs_coordinates.lat, lbs_coordinates.lng);
 
       if(this.esn.location !== undefined){ this.esn.location.lat = lbs_coordinates.lat; this.esn.location.lng = lbs_coordinates.lng; };

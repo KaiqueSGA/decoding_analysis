@@ -70,8 +70,6 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                   filter,
                 });
 
-                let iccid = device[0].tags.find(obj => obj.key === "iccid").value
-
   
                 if(device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
                   const smart_one_c_message = new soc_messages();  
@@ -86,7 +84,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                   const stx_message = new stx_messages();
                   let decoded_code;
 
-                  decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp, iccid);
+                  decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
                   decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                   decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
 
@@ -127,6 +125,18 @@ async function Decoding_analysis(context, scope) {
       const account = new Account({ token: envVars.account_token });
 
 
+      scope = [
+        {
+            variable: "payload",
+            value: "esn;0-4242117;model,AT-G1018;hmv,0.1M4;fmv,0.8M4;mode,2;media,GSM/GPRS;rtc,2023-03-28 17:55:56;battery_volts,1.78;imei,869951032048823;iccid,8944500601200071406F;cops,CLARO BR;jamm,+SJDR: NO JAMMING;rf_model,HC-12;rf_channel,001;rmc,$GNRMC,175856.000,A,2335.73273,S,04638.18158,W,000.2,042.5,280323,,,N,V*0D;vtg,$GNVTG,042.5,T,,M,000.2,N,000.3,K,A*11;zda,$GNZDA,175856.000,28,03,2023,00,00*4A;psti20,$PSTI,20,0,1,1,0,A,1,1,50.80,100.00,-0.01,0.00*4D;psti60,$PSTI,060,0,V,53.40,8.96,345.05,,,,,,,,*62;psti63,$PSTI,063,G,0.53,0.10,0.50,C,0.54,0.10,0.51*05;psti65,$PSTI,065,A,-0.03,-7.41,6.46,N,0.00,0.00,0.00*0B;psti70,$PSTI,070,T,I,52.1*2C;lbs_mode,LTE;lbs0,LBS0,9610,290,-87,-54,-17,-5,46111,28560395,724,05,255",
+            metadata: {
+                mqtt_topic: "MQTT"
+            }
+        }
+    ]
+    
+
+
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
@@ -136,13 +146,13 @@ async function Decoding_analysis(context, scope) {
             return await account.devices.list( { page:1, filter } );
           }
 
-        
+          
           const mqtt_message = new mqtt_messages(scope[0]);
           const tago_func = new tago_functions(account); 
 
           let device_id = await identify_device_on_tago();
           let decoded_code = await mqtt_message.decode(scope);
-          decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
+          //decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
           
           process.kill(process.pid, 'SIGINT');
       }
