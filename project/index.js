@@ -51,17 +51,16 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
 
             const ftp_method = new ftp_methods(ftp_file.name, ftp_connection);//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
             let file_content = await ftp_method.get_file_content(); //this function retruns an array with all messages that are inside of xml file
-            let time_stamp = catch_time_stamp(file_content);
 
 
             if(file_content === undefined){
               console.log("weren't possible get the content of file");
-              await smart_one_c_message.delete_file_from_ftp(); continue;
+              await ftp_method.delete_file_from_ftp(); continue;
             }
 
+            let time_stamp = catch_time_stamp(file_content);
 
-
-          for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message. The file content can has many stu_messages, therefore i need of more one loopig
+            for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message. The file content can has many stu_messages, therefore i need of more one loopig
               
                 let esn_value = cacth_esn(stu_message); 
 
@@ -70,14 +69,16 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                   page: 1,
                   filter,
                 });
-                
+
+                let iccid = device[0].tags.find(obj => obj.key === "iccid").value
+
   
                 if(device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
                   const smart_one_c_message = new soc_messages();  
                   let decoded_code;
 
                   decoded_code = smart_one_c_message.decode(stu_message, esn_value);
-                  decoded_code !== undefined && (await tago_func.insert_on_tago( decoded_code, account_tago, Device, device[0].id, stu_message));
+                  decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                   decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
                   
                   
@@ -85,7 +86,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                   const stx_message = new stx_messages();
                   let decoded_code;
 
-                  decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
+                  decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp, iccid);
                   decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                   decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
 
@@ -94,7 +95,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                  //provision algorithim
                }
                
-        };
+           };
         
 
         

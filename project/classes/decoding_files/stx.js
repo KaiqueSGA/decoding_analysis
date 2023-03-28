@@ -97,7 +97,7 @@ class stx_message {
 
 
 
-  async decode(file_content, esn_value, time_stamp) {
+  async decode(file_content, esn_value, time_stamp, iccid) {
     const location_functions = new location();
 
     let payload = this.catch_payload(file_content);
@@ -126,7 +126,8 @@ class stx_message {
         xml: file_content,
         link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
         address: await location_functions.get_address_through_coordinates(latitude, longitude),
-        cops:"SGA SAT"
+        cops:"SGA SAT",
+        iccid: iccid
       }
 
     };
