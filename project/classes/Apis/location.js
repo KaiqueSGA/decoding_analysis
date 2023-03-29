@@ -185,10 +185,10 @@ class location_apis {
                         };
                   });
           
-                  console.log(cellTowers[0])
+                  //console.log(cellTowers[0])
                   
                  const lbs0 = list.find((x) => x.cell === "LBS0");
-                 if(!lbs0){ return {lat:0, lng:0} };console.log(parseInt(lbs0.mcc), parseInt(lbs0.mnc))
+                 if(!lbs0){ return {lat:0, lng:0} };//console.log(parseInt(lbs0.mcc), parseInt(lbs0.mnc))
           
             
                     
@@ -217,7 +217,7 @@ class location_apis {
                         }
                        ]
                       }
-                    }).catch((err) => console.log(err))
+                    }).catch((err) => console.log())
                             
                           
                     if(!result) { return {lat:0, lng:0} };
