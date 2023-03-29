@@ -475,7 +475,7 @@ class mqtt_message {
 
     else if(this.esn.metadata.lbs0){
       const location_functions = new location();
-      const lbs_coordinates = await location_functions.get_coordinates_through_lbs_datas(["lbs0","lbs1","lbs2"], scope, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm");
+      const lbs_coordinates = await location_functions.get_coordinates_through_lbs_datas(["lbs0","lbs1","lbs2"], scope, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm");console.log(lbs_coordinates)
       this.esn.metadata.address = await location_functions.get_address_through_coordinates(lbs_coordinates.lat, lbs_coordinates.lng);
 
       if(this.esn.location !== undefined){ this.esn.location.lat = lbs_coordinates.lat; this.esn.location.lng = lbs_coordinates.lng; };

@@ -178,17 +178,17 @@ class location_apis {
              
                  let cellTowers = list.map((lbs) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
                       return {
-                         cellid: data_type === "lte" ?  parseInt(lbs.cellid) :parseInt(lbs.cellid),
+                         cellId: data_type === "lte" ?  parseInt(lbs.cellid) :parseInt(lbs.cellid),
                          locationAreaCode :data_type === "lte" ?parseInt(lbs.lac) :parseInt(lbs.lac),
                          mobileCountryCode: parseInt(lbs.mcc),
                          mobileNetworkCode: parseInt(lbs.mnc),
                         };
                   });
           
-                  //console.log(cellTowers[0])
+                 
                   
                  const lbs0 = list.find((x) => x.cell === "LBS0");
-                 if(!lbs0){ return {lat:0, lng:0} };//console.log(parseInt(lbs0.mcc), parseInt(lbs0.mnc))
+                 if(!lbs0){ return {lat:0, lng:0} };
           
             
                     
@@ -200,22 +200,12 @@ class location_apis {
                       key: "AIzaSyDq2lk5DBMUg2ymbDimMunBbvQwk-4MeLg",
                     },
                     data: {
-                       homeMobileCountryCode: 310,
-                       homeMobileNetworkCode: 410,
-                       radioType:"gsm",//define o tipo de dados que a minha api vai receber GSM | LTE
+                       homeMobileCountryCode: parseInt(lbs0.mcc),
+                       homeMobileNetworkCode: parseInt(lbs0.mnc),
+                       radioType: data_type === "lte" ?"LTE" :"gsm",//define o tipo de dados que a minha api vai receber GSM | LTE
                        carrier: "Vodafone",
-                       considerIp: true,
-                       cellTowers: [
-                        {
-                          cellid: 170402199,       
-                          locationAreaCode: 35632,
-                          mobileCountryCode: 310, 
-                          mobileNetworkCode: 410,
-                          age: 0,
-                          signalStrength: -60,
-                          timingAdvance: 15   
-                        }
-                       ]
+                       considerIp: false,
+                       cellTowers: data_type === "lte" ? [cellTowers[0]] :cellTowers
                       }
                     }).catch((err) => console.log())
                             
