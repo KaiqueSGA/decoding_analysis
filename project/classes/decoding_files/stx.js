@@ -23,13 +23,13 @@ class stx_message {
 
 
 
-  decode_lat = (file_content, cardinal_point) => {
+  decode_lat = (file_content, cardinal_position) => {
     let hexadecimal_lat = file_content.substring(0, 6);
     let lat = String(parseInt(hexadecimal_lat, 16)); //estou convertendo para inteiro um valor hexa, por isso eu coloco o 16 como parâmetro
 
-    let first_2_numbers_of_coordinate = cardinal_point.cardinal_position === "south"
-                                                                          ? "-" + lat.substring(0, 2)
-                                                                          : lat.substring(0, 2);
+    let first_2_numbers_of_coordinate = cardinal_position === "south"
+                                                                ? "-" + lat.substring(0, 2)
+                                                                : lat.substring(0, 2);
 
     let rest_of_coordinate = lat.substring(2);
     return first_2_numbers_of_coordinate + "." + rest_of_coordinate;
@@ -39,13 +39,13 @@ class stx_message {
 
 
 
-  decode_lng = (file_content, cardinal_point) => {
+  decode_lng = (file_content, cardinal_position) => {
     let hexadecimal_lng = file_content.substring(6, 12);
     let lng = String(parseInt(hexadecimal_lng, 16));
 
-    let first_2_numbers_of_coordinate = cardinal_point.cardinal_position === "weast"
-                                                                    ? "-" + lng.substring(0, 2)
-                                                                    : lng.substring(0, 2);
+    let first_2_numbers_of_coordinate = cardinal_position === "weast"
+                                                              ? "-" + lng.substring(0, 2)
+                                                              : lng.substring(0, 2);
 
     let rest_of_coordinate = lng.substring(2);
     return first_2_numbers_of_coordinate + "." + rest_of_coordinate;
@@ -56,18 +56,16 @@ class stx_message {
 
 
   decode_binary_values = (file_content) => {
-    let object_array = new Array();
+    let values_object = new Object();
     let binary = this.hex_2_bin(file_content.substring(12, 14));
 
     let value_of_each_byte = {
-      0: (byte) => { byte === "0"   ?object_array.push({ cardinal_position: "south" })   :object_array.push({ cardinal_position: "north" }); },
-      1: (byte) => { byte === "0"   ?object_array.push({ cardinal_position: "weast" })   : object_array.push({ cardinal_point: "east" }); },
-      2: (byte) => { byte === "0"   ?object_array.push({ origin: "GPS" })   :object_array.push({ origin: "GPS-DR" }); },
-      3: (byte) => { byte === "0"   ? object_array.push({ mode: 2 })   :object_array.push({ mode: "jamming" }); },
+      0: (byte) => { byte === "0"   ?values_object.cardinal_position_s_n = "south"    :values_object.cardinal_position_s_n = "north"; },
+      1: (byte) => { byte === "0"   ?values_object.cardinal_position_w_e = "weast"    :values_object.cardinal_position_w_e = "east";},
+      2: (byte) => { byte === "0"   ?values_object.origin = "GPS"                     :values_object.origin = "GPS-DR";},
+      3: (byte) => { byte === "0"   ?values_object.mode = 2                           :values_object.mode = 3; },
     };
-
-    //i --> binary position / binary[i] --> binary value
-    for (let i = 0; i <= 3; i++) { value_of_each_byte[String(i)](binary[i]); }
+    for (let i = 0; i <= 3; i++) { value_of_each_byte[String(i)](binary[i]); }//i --> binary position / binary[i] --> binary value
 
     
     let arr = [];
@@ -79,18 +77,21 @@ class stx_message {
     arr["101"] = "SW";//Sudoeste - south-west
     arr["110"] = "W";//Oeste - West
     arr["111"] = "NW";//Noroeste - Northwest
-    object_array.push({ direction: arr[binary.substring(5)] });
+    values_object.direction = arr[binary.substring(5)];
 
 
     let byte8 = this.hex_2_bin(file_content.substring(14, 16));
-    if(byte8.substring(0, 1) === "0") { object_array.push({ battery_change: false }); }//trocar substring por posição [0]
-    else{ object_array.push({ battery_change: true }); }
+    if(byte8.substring(0, 1) === "0") { values_object.battery_change = false; }//trocar substring por posição [0]
+    else{ values_object.battery_change = true; }
 
 
     let byte9 = file_content.substring(16, 18);
-    object_array.push({ lastSPD: parseInt(byte9, 16) });
+    values_object.lastSPD = parseInt(byte9, 16);
 
-    return object_array;
+    if(values_object.mode === 2){ values_object.jamm = "NO JAMMING"; }
+    else if(values_object.mode === 3){ values_object.jamm = "JAMMING DETECTED"; }
+
+    return values_object; 
   };
 
 
@@ -103,8 +104,8 @@ class stx_message {
     let payload = this.catch_payload(file_content);
     let bin_values_decoded = this.decode_binary_values(payload);
 
-    let latitude = Number(this.decode_lat(payload, bin_values_decoded[0]));
-    let longitude = Number(this.decode_lng(payload, bin_values_decoded[1]));
+    let latitude = Number(this.decode_lat(payload, bin_values_decoded.cardinal_position_s_n));
+    let longitude = Number(this.decode_lng(payload, bin_values_decoded.cardinal_position_w_e));
 
     return {
 
@@ -115,14 +116,15 @@ class stx_message {
       metadata: {
         lat: latitude,
         lon: longitude,
-        spd: bin_values_decoded[6].lastSPD,
-        direction: bin_values_decoded[4].direction,
+        spd: bin_values_decoded.lastSPD,
+        direction: bin_values_decoded.direction,
 
-        battery_volts: (bin_values_decoded[5].battery_change === true ?"low"  :"normal"),
+        battery_volts: (bin_values_decoded.battery_change === true ?"low"  :"normal"),
 
-        mode: bin_values_decoded[3].mode,
+        mode: bin_values_decoded.mode,
+        jamm: bin_values_decoded.jamm,
         media: "STX",
-        origin: bin_values_decoded[2].origin,
+        origin: bin_values_decoded.origin,
         xml: file_content,
         link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
         address: await location_functions.get_address_through_coordinates(latitude, longitude),
