@@ -159,13 +159,49 @@ class mqtt_message {
 
 
   //RMC = Recommended Minimum Specific GNSS Data
-  fncRMC = (tmpSTR) => {
-    //private method
-    tmpSTR = tmpSTR.replace("*", ",");
+  fncRMC = async(tmpSTR) => {//console.log("fncRMC")//private method
+    const location_functions = new location();
 
+    tmpSTR = tmpSTR.replace("*", ",");
     var tmpSPLIT = tmpSTR.split(",");
 
-    if (tmpSPLIT[12] == "N") return;
+     if (tmpSPLIT[12] == "N") {
+      const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
+      const lbs_coordinates = this.esn.metadata.lbs0 && mac_coordinates.lat === 0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0};
+      const coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
+
+      var tmpSPD = tmpSPLIT[7];
+      var tmpCOG = tmpSPLIT[8];
+      var tmpFLOAT = 0.0;
+      var tmpDIR = "";
+      var tmpIEC = tmpSPLIT[13];
+
+      this.esn.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
+
+      this.esn.metadata.url_pin = {};
+      this.esn.metadata.url_pin.url = this.mapLINK + coordinates.lat + "," + coordinates.lng;
+      this.esn.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
+      this.esn.metadata.link = this.mapLINK + coordinates.lat + "," + coordinates.lng;
+      
+      var knot = 1.852;
+      tmpSPD = tmpSPD * knot;
+      tmpSPD = tmpSPD.toFixed(1);
+  
+      //COG = Course Over the Ground to DIR 👎�
+      tmpFLOAT = parseInt(tmpCOG);
+      tmpDIR = this.get_cardinal_direction(tmpFLOAT);
+  
+
+      this.esn.metadata.lat = coordinates.lat; 
+      this.esn.metadata.lon = coordinates.lng; 
+      this.esn.metadata.spd = tmpSPD; 
+      this.esn.metadata.cog = tmpCOG;
+      this.esn.metadata.direction = tmpDIR;
+      this.esn.metadata.IEC = tmpIEC;
+      this.esn.metadata.address = await location_functions.get_address_through_coordinates(coordinates.lat, coordinates.lng);
+
+      return;
+    };
     /*
     Mode indicator D Mode indicator
     ‘A’ = Autonomous mode
@@ -215,7 +251,7 @@ class mqtt_message {
     this.esn.metadata.url_pin = {};
     this.esn.metadata.url_pin.url = tmpLINK;
     this.esn.metadata.url_pin.alias = "Open map at " + tmpLATLON;
-    this.esn.metadata.link = tmpLINK; //field name to lowercase
+    this.esn.metadata.link = tmpLINK; 
 
     //Speed from knots to Km/h
     var knot = 1.852;
@@ -227,12 +263,13 @@ class mqtt_message {
     tmpDIR = this.get_cardinal_direction(tmpFLOAT);
 
     //MORE METADATA
-    this.esn.metadata.lat = tmpLAT; //field name to lowercase
-    this.esn.metadata.lon = tmpLON; //field name to lowercase
-    this.esn.metadata.spd = tmpSPD; //field name to lowercase
+    this.esn.metadata.lat = tmpLAT; 
+    this.esn.metadata.lon = tmpLON; 
+    this.esn.metadata.spd = tmpSPD; 
     this.esn.metadata.cog = tmpCOG;
     this.esn.metadata.direction = tmpDIR;
     this.esn.metadata.IEC = tmpIEC;
+    this.esn.metadata.address = await location_functions.get_address_through_coordinates(tmpLAT, tmpLON);
   };
 
 
@@ -376,23 +413,23 @@ class mqtt_message {
 
   //VTG = Course Over Ground and Ground Speed
   fncVTG = (tmpSTR) => {
-    //private method
-    tmpSTR = tmpSTR.replace("*", ",");
 
-    var tmpSPLIT = tmpSTR.split(",");
-    if (tmpSPLIT[9] == "N") return; //‘N’ = Data not valid
+      tmpSTR = tmpSTR.replace("*", ",");
 
-    var tmpSPD = tmpSPLIT[7]; //Km/h
-    var tmpCOG = tmpSPLIT[1];
-    var tmpFLOAT = 0.0;
-    var tmpDIR = "";
-
-    tmpFLOAT = parseInt(tmpCOG);
-    tmpDIR = this.get_cardinal_direction(tmpFLOAT);
-
-    this.esn.metadata.spd = tmpSPD;
-    this.esn.metadata.cog = tmpCOG;
-    this.esn.metadata.direction = tmpDIR;
+      var tmpSPLIT = tmpSTR.split(",");
+      //if (tmpSPLIT[9] == "N") return; //‘N’ = Data not valid
+  
+      var tmpSPD = tmpSPLIT[7]; //Km/h
+      var tmpCOG = tmpSPLIT[1];
+      var tmpFLOAT = 0.0;
+      var tmpDIR = "";
+  
+      tmpFLOAT = parseInt(tmpCOG);
+      tmpDIR = this.get_cardinal_direction(tmpFLOAT);
+  
+      this.esn.metadata.spd = tmpSPD;
+      this.esn.metadata.cog = tmpCOG;
+      this.esn.metadata.direction = tmpDIR;
   };
 
 
@@ -415,7 +452,7 @@ class mqtt_message {
 
   
   decode = async (scope) => {//public method
-  
+
     var values_array = this.esn.value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
 
     this.esn.metadata.raw_data = scope[0].value;
@@ -437,12 +474,19 @@ class mqtt_message {
         else if (field_key.startsWith("cops")) { this.add_operator_field(field_value); }
         else if (field_key.startsWith("jamm")) { this.add_jamming_state(field_value); }
         else if (field_key.startsWith("gns")) { this.fncGNS(field_value);} //SIM7000G Proprietary GPS Sentence
-        else if (field_key.startsWith("rmc")) { this.fncRMC(field_value); } 
         else if (field_key.startsWith("gll")) { this.fncGLL(field_value); }
         else if (field_key.startsWith("gga")) { this.fncGGA(field_value); }
         else if (field_key.startsWith("zda")) { this.get_rtc_time(field_value); } 
         else if (field_key.startsWith("vtg")) { this.fncVTG(field_value); } 
         else if (field_key.startsWith("psti20")) { this.get_message_origin(field_value);}
+    }
+
+    if(values_array.find(item => item.includes("rmc")) !== undefined){
+
+      let field_key = values_array.find(item => item.includes("rmc")).split(",")[0].trim();
+      let field_value = values_array.find(item => item.includes("rmc")).replace(field_key + ",", "").trim();
+      await this.fncRMC(field_value);
+
     }
 
     
@@ -451,40 +495,6 @@ class mqtt_message {
 
     //Adjust variable date/time
     if (this.esn.metadata.RTC) { this.esn.time = this.esn.metadata.RTC; }
-
-
-
-    if(this.esn.location !== undefined) {
-      if(typeof this.esn.location.lat === "number" &&  typeof this.esn.location.lng === "number"){ //If this coordinate exist, I´m going to use it in the Google localization functions
-        const location_functions = new location();
-        this.esn.metadata.address = await location_functions.get_address_through_coordinates(this.esn.location.lat,this.esn.location.lng);
-      }
-
-    }
-    
-    else if(this.esn.metadata.mac0){
-      const location_functions = new location();
-      const mac_coordinates = await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], scope );
-      this.esn.metadata.address = await location_functions.get_address_through_coordinates( mac_coordinates.lat,  mac_coordinates.lng );
-
-      if(this.esn.location !== undefined) { this.esn.location.lat = mac_coordinates.lat; this.esn.location.lng = mac_coordinates.lng; }
-      this.esn.metadata.lat = mac_coordinates.lat;
-      this.esn.metadata.lon = mac_coordinates.lng;
-      this.esn.metadata.link = "https://www.google.com/maps/search/?api=1&query=" + mac_coordinates.lat + "," + mac_coordinates.lng;
-    }
-
-    else if(this.esn.metadata.lbs0){
-      const location_functions = new location();
-      const lbs_coordinates = await location_functions.get_coordinates_through_lbs_datas(["lbs0","lbs1","lbs2"], scope, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm");console.log(lbs_coordinates)
-      this.esn.metadata.address = await location_functions.get_address_through_coordinates(lbs_coordinates.lat, lbs_coordinates.lng);
-
-      if(this.esn.location !== undefined){ this.esn.location.lat = lbs_coordinates.lat; this.esn.location.lng = lbs_coordinates.lng; };
-      this.esn.metadata.lat = lbs_coordinates.lat;
-      this.esn.metadata.lon = lbs_coordinates.lng;
-      this.esn.metadata.link = "https://www.google.com/maps/search/?api=1&query=" + lbs_coordinates.lat + "," + lbs_coordinates.lng;
-   
-    }
-
     return this.esn;
   };
 

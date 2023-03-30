@@ -4,18 +4,18 @@ const axios = require('axios');
 class location_apis {
 
 
-     prepare_mac_parameterers_for_requisition = (wifi_fields, scope) => {//private method
+     prepare_mac_parameterers_for_requisition = (wifi_fields, esn) => {//private method
             let wifi_parameters_list = new Array();
     
             if(wifi_fields === undefined){
                 return; 
             }else{
                 wifi_fields.forEach(key => {
-                if(!scope[0].metadata[key]){//if there isn´t nothing field with the specific wifi name, will retun the function.
+                if(!esn.metadata[key]){//if there isn´t nothing field with the specific wifi name, will retun the function.
                   return
                 }
             
-                let wifi_fields_array = scope[0].metadata[key].split(",");
+                let wifi_fields_array = esn.metadata[key].split(",");
                 wifi_parameters_list.push({
                 macAddress: wifi_fields_array[0],
                 signalStrength: wifi_fields_array[1],
@@ -32,16 +32,16 @@ class location_apis {
 
 
 
-      prepare_lbs_parameters_for_requesition = (keyTag,scope,dataType) => {
+      prepare_lbs_parameters_for_requesition = (keyTag,esn,dataType) => {
         if(keyTag === undefined){ return; }
 
         let lbsList = new Array();   
           
               keyTag.forEach(key => {
       
-                  if(!scope[0].metadata[key]){ return; }// if there isn´t nothing field with the specific lbs, will retun the function.
+                  if(!esn.metadata[key]){ return; }// if there isn´t nothing field with the specific lbs, will retun the function.
               
-                  let arrayFieldsLbs = (scope[0].metadata[key]).split(',');
+                  let arrayFieldsLbs = (esn.metadata[key]).split(',');
                   if (arrayFieldsLbs.length < 3) { return; }
                   if (arrayFieldsLbs[4] === "FFFF" || arrayFieldsLbs[7] === "0000") { return; };
       
@@ -138,9 +138,9 @@ class location_apis {
 
 
 
-       get_coordinates_through_mac_datas = async(wifi_fields, scope) =>{
+       get_coordinates_through_mac_datas = async(wifi_fields, esn) =>{
           
-         let list = this.prepare_mac_parameterers_for_requisition(wifi_fields, scope);
+         let list = this.prepare_mac_parameterers_for_requisition(wifi_fields, esn);
         
             try{
                     /* if the mode that i sent to a function is the same the wifi, i want that the function made a macAddress requisition */
@@ -172,9 +172,9 @@ class location_apis {
 
 
 
-     get_coordinates_through_lbs_datas = async(lbs_fields, scope, data_type) =>{
+     get_coordinates_through_lbs_datas = async(lbs_fields, esn, data_type) =>{
          try{
-                 let list = this.prepare_lbs_parameters_for_requesition(lbs_fields, scope, data_type);
+                 let list = this.prepare_lbs_parameters_for_requesition(lbs_fields, esn, data_type);
              
                  let cellTowers = list.map((lbs) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
                       return {
