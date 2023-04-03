@@ -402,9 +402,11 @@ class mqtt_message {
 
     //DATE/TIME
     var tmpDATE = strYY + "-" + strMM + "-" + strDD;
-    var tmpTIME = strH + ":" + strM + ":" + strS;
-    var tmpDATETIME = tmpDATE + " " + tmpTIME;
+    var tmpTIME = (Number(strH) + 3) + ":" + strM + ":" + strS;
+    var tmpDATETIME = tmpDATE + "T" + tmpTIME + ".000Z"; 
+
     this.esn.metadata.rtc = tmpDATETIME;
+    this.esn.time = tmpDATETIME;
   };
 
 

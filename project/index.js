@@ -118,15 +118,7 @@ async function Decoding_analysis(context, scope) {
       const envVars = Utils.envToJson(context.environment);
       const account = new Account({ token: envVars.account_token });
 
-      scope = [
-        {
-            variable: "payload",
-            value: "esn;0-4242117;model,AT-G1018;hmv,0.1M4;fmv,0.8M4;mode,2;media,GSM/GPRS;rtc,2023-03-29 19:18:13;battery_volts,3.78;imei,869951032048823;iccid,8944500601200071406F;cops,CLARO BR;jamm,+SJDR: NO JAMMING;rf_model,HC-12;rf_channel,001;rmc,$GNRMC,191818.000,V,2335.72579,S,04638.18616,W,000.0,000.0,290323,,,N,V*14;vtg,$GNVTG,000.0,T,,M,000.0,N,000.0,K,N*1C;zda,$GNZDA,191818.000,29,03,2023,00,00*4B;psti20,$PSTI,20,0,1,1,0,N,1,1,48.20,100.00,-0.00,0.00*40;psti60,$PSTI,060,0,V,-0.97,-7.58,0.00,,,,,,,,*54;psti63,$PSTI,063,G,0.88,0.18,0.48,C,0.88,0.18,0.48*03;psti65,$PSTI,065,A,-1.29,0.24,-9.55,N,0.00,0.00,0.00*0B;psti70,$PSTI,070,T,I,40.1*2F;mac0,C0:3D:D9:10:79:F0;mac1,CC:32:E5:11:0B:80;mac2,CE:32:E5:21:0B:80;lbs_mode,LTE;lbs0,LBS0,9610,290,-97,-61,-16,-5,46111,28560395,724,05,255;lbs1,LBS1,9610,282,-98,-71,-18,-5;lbs2,LBS2,9610,25,-101,-72,-20,-5",
-            metadata: {
-                mqtt_topic: "MQTT"
-            }
-        }
-    ]
+      
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
@@ -141,7 +133,7 @@ async function Decoding_analysis(context, scope) {
           const tago_func = new tago_functions(account); 
 
           let device_id = await identify_device_on_tago();
-          let decoded_code = await mqtt_message.decode(scope);console.log(decoded_code)
+          let decoded_code = await mqtt_message.decode(scope);
           decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
           
           process.kill(process.pid, 'SIGINT');
