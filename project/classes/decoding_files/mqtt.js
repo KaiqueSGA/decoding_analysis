@@ -159,16 +159,32 @@ class mqtt_message {
 
 
   //RMC = Recommended Minimum Specific GNSS Data
-  fncRMC = async(tmpSTR) => {//console.log("fncRMC")//private method
+  fncRMC = async(tmpSTR) => {
     const location_functions = new location();
 
     tmpSTR = tmpSTR.replace("*", ",");
     var tmpSPLIT = tmpSTR.split(",");
 
-     if (tmpSPLIT[12] == "N") {
+      if (tmpSPLIT[12] == "N") {
       const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
-      const lbs_coordinates = this.esn.metadata.lbs0 && mac_coordinates.lat === 0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0};
-      const coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
+      const lbs_coordinates = this.esn.metadata.lbs0 && mac_coordinates.lat === 0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
+      let coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
+
+       if(coordinates.lat === 0 || coordinates.lng === 0){
+        let tmpLAT = tmpSPLIT[3];
+        let tmpLON = tmpSPLIT[5];
+
+        let tmpNS = tmpSPLIT[4];
+        var tmpEW = tmpSPLIT[6];
+
+        tmpLAT = this.fncGPS166(tmpLAT);
+        if(tmpNS == "S") { coordinates.lat = "-" + tmpLAT; }
+    
+        tmpLON = this.fncGPS166(tmpLON);
+        if(tmpEW == "W") { coordinates.lng = "-" + tmpLON; }
+      } 
+
+
 
       var tmpSPD = tmpSPLIT[7];
       var tmpCOG = tmpSPLIT[8];
@@ -201,7 +217,7 @@ class mqtt_message {
       this.esn.metadata.address = await location_functions.get_address_through_coordinates(coordinates.lat, coordinates.lng);
 
       return;
-    };
+    }; 
     /*
     Mode indicator D Mode indicator
     ‘A’ = Autonomous mode
@@ -444,10 +460,18 @@ class mqtt_message {
     tmpSTR = tmpSTR.replace("*", ",");
 
     var tmpSPLIT = tmpSTR.split(",");
-    tmpSTR = "NULL";
+    tmpSTR = null;
     if (tmpSPLIT[6] == "A") tmpSTR = "GPS";
     if (tmpSPLIT[6] == "E") tmpSTR = "GPS-DR";
     if (tmpSPLIT[6] == "N") tmpSTR = "ERROR";
+
+   
+    if(tmpSTR === null || tmpSTR === "ERROR") {
+      if(this.esn.metadata.raw_data.includes("mac0")) { tmpSTR = "MAC" }
+      else if(this.esn.metadata.raw_data.includes("lbs0")) { tmpSTR = "LBS" } 
+    }
+
+
     this.esn.metadata.origin = tmpSTR;
   };
 

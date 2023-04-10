@@ -98,7 +98,7 @@ class stx_message {
 
 
 
-  async decode(file_content, esn_value, time_stamp) {
+  async decode(file_content, esn_value, unixtime) {
     const location_functions = new location();
 
     let payload = this.catch_payload(file_content);
@@ -111,7 +111,7 @@ class stx_message {
 
       variable: "ESN",
       value: esn_value,
-      time: time_stamp,
+      time: unixtime,
       location: { type: "Point", coordinates: [longitude, latitude] },
       metadata: {
         lat: latitude,

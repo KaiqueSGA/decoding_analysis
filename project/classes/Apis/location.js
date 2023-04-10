@@ -17,9 +17,9 @@ class location_apis {
             
                 let wifi_fields_array = esn.metadata[key].split(",");
                 wifi_parameters_list.push({
-                macAddress: wifi_fields_array[0],
-                signalStrength: wifi_fields_array[1],
-                signalToNoiseRatio: 0,
+                  macAddress: wifi_fields_array[0],
+                  signalStrength: wifi_fields_array[1],
+                  signalToNoiseRatio: 0,
                 })
             
               });
