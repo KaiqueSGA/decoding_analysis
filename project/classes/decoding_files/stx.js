@@ -106,6 +106,8 @@ class stx_message {
 
     let latitude = Number(this.decode_lat(payload, bin_values_decoded.cardinal_position_s_n));
     let longitude = Number(this.decode_lng(payload, bin_values_decoded.cardinal_position_w_e));
+    
+    if(latitude === 0 || longitude === 0) { return undefined };
 
     return {
 
@@ -126,6 +128,10 @@ class stx_message {
         media: "STX",
         origin: bin_values_decoded.origin,
         xml: file_content,
+        url_pin: {
+          url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
+          alias: `Open map at =${latitude},${longitude}`
+        },
         link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
         address: await location_functions.get_address_through_coordinates(latitude, longitude),
         cops:"SGA SAT"

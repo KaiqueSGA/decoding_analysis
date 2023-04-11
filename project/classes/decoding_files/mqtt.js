@@ -3,6 +3,7 @@ const location = require("../Apis/location");
 
 class mqtt_message {
   mapLINK = "https://www.google.com/maps/search/?api=1&query=";
+  coordinates_origin;
   esn;
 
   constructor(esn) {
@@ -165,10 +166,14 @@ class mqtt_message {
     tmpSTR = tmpSTR.replace("*", ",");
     var tmpSPLIT = tmpSTR.split(",");
 
-      if (tmpSPLIT[12] == "N") {
+      if(tmpSPLIT[12] == "N") {
       const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
       const lbs_coordinates = this.esn.metadata.lbs0 && mac_coordinates.lat === 0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
+     
+      if(mac_coordinates.lat === 0  &&  lbs_coordinates.lat === 0){ process.kill(process.pid, 'SIGINT'); return;  }
+
       let coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
+      this.coordinates_origin = mac_coordinates.lat != 0   ?"MAC"  :"LBS";
 
        if(coordinates.lat === 0 || coordinates.lng === 0){
         let tmpLAT = tmpSPLIT[3];
@@ -466,10 +471,7 @@ class mqtt_message {
     if (tmpSPLIT[6] == "N") tmpSTR = "ERROR";
 
    
-    if(tmpSTR === null || tmpSTR === "ERROR") {
-      if(this.esn.metadata.raw_data.includes("mac0")) { tmpSTR = "MAC" }
-      else if(this.esn.metadata.raw_data.includes("lbs0")) { tmpSTR = "LBS" } 
-    }
+    if(tmpSTR === null || tmpSTR === "ERROR") { tmpSTR = this.coordinates_origin }
 
 
     this.esn.metadata.origin = tmpSTR;
@@ -478,7 +480,7 @@ class mqtt_message {
 
   
   decode = async (scope) => {//public method
-
+    
     var values_array = this.esn.value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
 
     this.esn.metadata.raw_data = scope[0].value;
@@ -504,7 +506,6 @@ class mqtt_message {
         else if (field_key.startsWith("gga")) { this.fncGGA(field_value); }
         else if (field_key.startsWith("zda")) { this.get_rtc_time(field_value); } 
         else if (field_key.startsWith("vtg")) { this.fncVTG(field_value); } 
-        else if (field_key.startsWith("psti20")) { this.get_message_origin(field_value);}
     }
 
     if(values_array.find(item => item.includes("rmc")) !== undefined){
@@ -514,6 +515,15 @@ class mqtt_message {
       await this.fncRMC(field_value);
 
     }
+
+    if(values_array.find(item => item.includes("psti20")) !== undefined){
+
+      let field_key = values_array.find(item => item.includes("psti20")).split(",")[0].trim();
+      let field_value = values_array.find(item => item.includes("psti20")).replace(field_key + ",", "").trim();
+      this.get_message_origin(field_value);
+
+    }
+
 
     
     delete this.esn.metadata.mqtt_topic; //clean mqtt_topic

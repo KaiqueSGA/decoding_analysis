@@ -52,7 +52,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
           }
           let unixtime = catch_unixtime(file_content);
 
-           
+              
            for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message. The file content can has many stu_messages, therefore i need of more one loopig
             
               let esn_value = cacth_esn(stu_message); 
@@ -79,7 +79,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
 
                 decoded_code = await stx_message.decode(stu_message, esn_value, unixtime);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
-                decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
+                await ftp_method.delete_file_from_ftp();
 
 
              }else{
@@ -112,8 +112,8 @@ async function Decoding_analysis(context, scope) {
       /* constants responsibles per access functions of tago.io */
       const envVars = Utils.envToJson(context.environment);
       const account = new Account({ token: envVars.account_token });
-
       
+    
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
