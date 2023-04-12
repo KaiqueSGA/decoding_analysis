@@ -22,17 +22,22 @@ const cacth_esn = (data) =>{//what is ESN? Read in our README.
 
 
 
-const catch_unixtime = (data) => {
-data = data[0];
-
- let help = data.indexOf("<unixTime>");
- let firstTag = data.indexOf(">",help);
- let secondTag = data.indexOf("</unixTime>",firstTag);
-
- let unixtime = data.substring(firstTag + 1,secondTag);
- let final_date = new Date( (unixtime) * 1000 ); 
- return final_date;
-}
+const catch_time_stamp = (data) => {
+  data = data[0];
+  let helpp = data.indexOf("timeStamp");
+  let firstTagg = data.indexOf("=",helpp);
+  
+  let secondTag = data.indexOf("T",firstTagg);
+  let time_stamp = data.substring(firstTagg+2,secondTag+1);
+  
+  let date_time_elements = time_stamp.split(" ");// The elements are divided in 3 categories. 0=date; 1=time; 2=time format
+  let date_elements = date_time_elements[0].split("/");// the date elements are divided in 3 categories. 0=day; 1=month; 2=year;
+  let time_elements = date_time_elements[1].split(":");//the time elements are dividide in 3 categories. 0=hour; 1=minute; 2:second;     
+  
+  
+   time_stamp = new Date(`${date_elements[2]}-${date_elements[1]}-${date_elements[0]}T${time_elements[0]}:${time_elements[1]}:${time_elements[2]}Z`);
+  return time_stamp;
+  }
 
 
 
@@ -50,7 +55,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
             console.log("weren't possible get the content of file");
             await ftp_method.delete_file_from_ftp(); continue;
           }
-          let unixtime = catch_unixtime(file_content);
+          let time_stamp = catch_time_stamp(file_content);
 
               
            for await(let stu_message of file_content){// I need to do this for because inside of file content, i can have more than one message. The file content can has many stu_messages, therefore i need of more one loopig
@@ -77,7 +82,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 const stx_message = new stx_messages();
                 let decoded_code;
 
-                decoded_code = await stx_message.decode(stu_message, esn_value, unixtime);
+                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
 
@@ -113,7 +118,7 @@ async function Decoding_analysis(context, scope) {
       const envVars = Utils.envToJson(context.environment);
       const account = new Account({ token: envVars.account_token });
       
-    
+
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
