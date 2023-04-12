@@ -82,7 +82,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 const stx_message = new stx_messages();
                 let decoded_code;
 
-                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
+                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp); 
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
 
@@ -177,4 +177,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "67937c9b-f516-448c-aad2-c6369fbf8e7a" });
+module.exports = new Analysis(Decoding_analysis, { token: "a7925d96-99bc-4a70-b8f1-b7061a777dbd" });

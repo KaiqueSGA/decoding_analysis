@@ -55,7 +55,7 @@ class smart_one_c_message{
         const longitude = this.decode_lng(hexa_code.substring(8,14));
         
 
-        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:0, device_type:"SOC"} }; //this object will be filled during of decoding of bits of each byte
+        let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude,latitude] }, metadata:{ message_type:0, device_type:"SOC", url_pin: {url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, alias: `Open map at ${latitude},${longitude}`}} }; //this object will be filled during of decoding of bits of each byte
         
         /* Variable that i'm going to use to decode the values of the byte  */
         let current_byte = "";
@@ -170,22 +170,17 @@ class smart_one_c_message{
      //It receives 2 parameters: hexa_code --> From this parameter we're going to get the values sent by device , esn_value --> device identifier;
      //This method will return an object with the fields and its binary values;
      Decode_truncate_message(hexa_code, esn_value){//private method
-          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC"} };
+        
+          const latitude = this.decode_lat(`${hexa_code.substring(2,4)}${hexa_code.substring(4,6)}${hexa_code.substring(6,8)}`);
+          const longitude = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
+
+          let object_with_datas_to_insert_on_tago = { variable:"ESN", value: esn_value, location:{ type:"Point", coordinates:[longitude, latitude] }, metadata:{ message_type:1, sub_type:0, device_type:"SOC", lat:latitude, lon:longitude, url_pin: {url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, alias: `Open map at ${latitude},${longitude}`} } };
           let hex_2_bin = ("00000000" + (parseInt(hexa_code.substring(0,2), 16)).toString(2)).slice(-8);
-
-
-          const decoded_lat = this.decode_lat(`${hexa_code.substring(2,4)}${hexa_code.substring(4,6)}${hexa_code.substring(6,8)}`);
-          const decoded_lng = this.decode_lng(`${hexa_code.substring(8,10)}${hexa_code.substring(10,12)}${hexa_code.substring(12,14)}`);
-
 
          /* in this code block I'm assigning values to the response object*/
           hexa_code.length === 18 ? object_with_datas_to_insert_on_tago.metadata.sub_type = 0 : object_with_datas_to_insert_on_tago.metadata.sub_type = 1
-          object_with_datas_to_insert_on_tago.location.coordinates = [decoded_lng, decoded_lat];
           object_with_datas_to_insert_on_tago.metadata.user_data = hexa_code.substring(14); 
           object_with_datas_to_insert_on_tago.metadata.submask_data = parseInt(hex_2_bin.substring(2),2);
-          object_with_datas_to_insert_on_tago.metadata.lat = decoded_lat;
-          object_with_datas_to_insert_on_tago.metadata.lon = decoded_lng;
-
 
           return object_with_datas_to_insert_on_tago;
     }
