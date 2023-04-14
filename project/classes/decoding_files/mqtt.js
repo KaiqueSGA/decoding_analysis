@@ -462,11 +462,15 @@ class mqtt_message {
   //PSTI20 = Dead Reckoning Status Message
   get_message_origin = (tmpSTR) => {
     //private method
+
+    let dr_cal = tmpSTR.split(",")[2];
+    let gyro_cal = tmpSTR.split(",")[3];
+
     tmpSTR = tmpSTR.replace("*", ",");
 
     var tmpSPLIT = tmpSTR.split(",");
     tmpSTR = null;
-    if (tmpSPLIT[6] == "A") tmpSTR = "GPS";
+    if (tmpSPLIT[6] == "A") tmpSTR = "GPS"; 
     if (tmpSPLIT[6] == "E") tmpSTR = "GPS-DR";
     if (tmpSPLIT[6] == "N") tmpSTR = "ERROR";
 
@@ -475,6 +479,8 @@ class mqtt_message {
 
 
     this.esn.metadata.origin = tmpSTR;
+    this.esn.metadata.dr_cal = Number(dr_cal);
+    this.esn.metadata.gyro_cal = Number(gyro_cal);
   };
 
 

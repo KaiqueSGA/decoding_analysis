@@ -130,7 +130,7 @@ class stx_message {
         xml: file_content,
         url_pin: {
           url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
-          alias: `Open map at =${latitude},${longitude}`
+          alias: `Open map at ${latitude},${longitude}`
         },
         link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
         address: await location_functions.get_address_through_coordinates(latitude, longitude),

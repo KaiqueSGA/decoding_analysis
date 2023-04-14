@@ -117,7 +117,7 @@ async function Decoding_analysis(context, scope) {
       /* constants responsibles per access functions of tago.io */
       const envVars = Utils.envToJson(context.environment);
       const account = new Account({ token: envVars.account_token });
-      
+
 
       if(scope.length !== 0){ console.log("MQTT")
 
@@ -133,7 +133,7 @@ async function Decoding_analysis(context, scope) {
           const tago_func = new tago_functions(account); 
 
           let device_id = await identify_device_on_tago();
-          let decoded_code = await mqtt_message.decode(scope);
+          let decoded_code = await mqtt_message.decode(scope); 
           decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
           
           process.kill(process.pid, 'SIGINT');
@@ -177,4 +177,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "a7925d96-99bc-4a70-b8f1-b7061a777dbd" });
+module.exports = new Analysis(Decoding_analysis, { token: "67937c9b-f516-448c-aad2-c6369fbf8e7a" });
