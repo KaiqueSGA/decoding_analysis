@@ -135,8 +135,8 @@ class stx_message {
         link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
         address: await location_functions.get_address_through_coordinates(latitude, longitude),
         cops:"SGA SAT",
-        dr_cal: null,
-        gyro_cal: null
+        dr_cal: "null",
+        gyro_cal: "null"
       }
 
     };
