@@ -25,14 +25,14 @@ class stx_message {
 
   decode_lat = (file_content, cardinal_position) => {
     let hexadecimal_lat = file_content.substring(0, 6);
-    let lat = String(parseInt(hexadecimal_lat, 16)); //estou convertendo para inteiro um valor hexa, por isso eu coloco o 16 como parâmetro
+    let integer_lat = String(parseInt(hexadecimal_lat, 16)); //estou convertendo para inteiro um valor hexa, por isso eu coloco o 16 como parâmetro
+     
+    let final_lat = integer_lat / 10_000; 
+    let ready_coordinate = cardinal_position === "south"
+                                                      ? "-" + String(final_lat.toFixed(8))
+                                                      : String(final_lat.toFixed(8));
 
-    let first_2_numbers_of_coordinate = cardinal_position === "south"
-                                                                ? "-" + lat.substring(0, 2)
-                                                                : lat.substring(0, 2);
-
-    let rest_of_coordinate = lat.substring(2);
-    return first_2_numbers_of_coordinate + "." + rest_of_coordinate;
+    return ready_coordinate; 
   };
 
 
@@ -41,14 +41,14 @@ class stx_message {
 
   decode_lng = (file_content, cardinal_position) => {
     let hexadecimal_lng = file_content.substring(6, 12);
-    let lng = String(parseInt(hexadecimal_lng, 16));
+    let integer_lng = parseInt(hexadecimal_lng, 16);
 
-    let first_2_numbers_of_coordinate = cardinal_position === "weast"
-                                                              ? "-" + lng.substring(0, 2)
-                                                              : lng.substring(0, 2);
+    let final_lng = integer_lng / 10_000; 
+    let ready_coordinate = cardinal_position === "weast"
+                                                     ? "-" + String(final_lng.toFixed(8))
+                                                     : String(final_lng.toFixed(8));
 
-    let rest_of_coordinate = lng.substring(2);
-    return first_2_numbers_of_coordinate + "." + rest_of_coordinate;
+    return ready_coordinate; 
   };
 
 

@@ -82,7 +82,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 const stx_message = new stx_messages();
                 let decoded_code;
 
-                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp); 
+                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
 
@@ -112,7 +112,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
 
 
 /* this function will be the first to be called */
-async function Decoding_analysis(context, scope) {
+async function Decoding_analysis(context, scope) {  
   try{
       /* constants responsibles per access functions of tago.io */
       const envVars = Utils.envToJson(context.environment);
