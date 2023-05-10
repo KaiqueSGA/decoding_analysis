@@ -87,7 +87,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 const stx_message = new stx_messages();
                 let decoded_code;
 
-                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp); 
+                decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
 
@@ -117,12 +117,12 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
 
 
 /* this function will be the first to be called */
-async function Decoding_analysis(context, scope) {
+async function Decoding_analysis(context, scope) {  
   try{
       /* constants responsibles per access functions of tago.io */
       const envVars = Utils.envToJson(context.environment);
       const account = new Account({ token: envVars.account_token });
-      
+
 
       if(scope.length !== 0){ console.log("MQTT")
 
@@ -138,7 +138,7 @@ async function Decoding_analysis(context, scope) {
           const tago_func = new tago_functions(account); 
 
           let device_id = await identify_device_on_tago();
-          let decoded_code = await mqtt_message.decode(scope);
+          let decoded_code = await mqtt_message.decode(scope); 
           decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
           
           process.kill(process.pid, 'SIGINT');
@@ -182,4 +182,8 @@ async function Decoding_analysis(context, scope) {
 
 };
 
+<<<<<<< HEAD
 module.exports = new Analysis(Decoding_analysis, { token: "850a5a75-c905-4d98-89d3-0e3155a71a9f" });
+=======
+module.exports = new Analysis(Decoding_analysis, { token: "67937c9b-f516-448c-aad2-c6369fbf8e7a" });
+>>>>>>> 59455a41c2d9ad1328fc919701e8e686ebe576c0
