@@ -10,6 +10,7 @@ const soc_messages = require("./classes/decoding_files/soc.js");
 const mqtt_messages = require("./classes/decoding_files/mqtt.js");
 const tago_functions = require("./classes/Apis/tago");
 const ftp_methods = require("./classes/Apis/ftp");
+const location = require("./classes/Apis/location.js");
 
 
 
@@ -43,6 +44,7 @@ const catch_time_stamp = (data) => {
 
 async function Changing_algorithm(file_list, ftp_connection, account_tago){ 
   const tago_function = new tago_functions(account_tago);
+  const location_functions = new location();
 
   for await(let ftp_file of file_list){
       try{console.log(" ");console.log(ftp_file.name)
@@ -74,6 +76,9 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 let decoded_code;
 
                 decoded_code = smart_one_c_message.decode(stu_message, esn_value);
+
+                decoded_code !== undefined && ( decoded_code.metadata.address = await location_functions.get_address_through_coordinates(decoded_code.metadata.lat, decoded_code.metadata.lon) );
+                decoded_code !== undefined && ( decoded_code.time = time_stamp );
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
                 
@@ -177,4 +182,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "a7925d96-99bc-4a70-b8f1-b7061a777dbd" });
+module.exports = new Analysis(Decoding_analysis, { token: "850a5a75-c905-4d98-89d3-0e3155a71a9f" });
