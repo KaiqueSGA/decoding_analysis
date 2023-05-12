@@ -69,26 +69,27 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
               });
 
 
-              if(device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
+              if(!device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
                 const smart_one_c_message = new soc_messages();  
                 let decoded_code;
 
                 decoded_code = smart_one_c_message.decode(stu_message, esn_value);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
-                
-                
-              }else if( device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
+              }
+              
+              else if(!device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
                 const stx_message = new stx_messages();
                 let decoded_code;
 
                 decoded_code = await stx_message.decode(stu_message, esn_value, time_stamp);
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
-
-
-             }else{
-               //provision algorithim
+             }
+             
+             else{
+               console.log("Device isn't registered in TAGO.IO")
+               continue;
              }
              
          }; 
