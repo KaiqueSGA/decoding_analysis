@@ -49,8 +49,8 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
   for await(let ftp_file of file_list){
       try{console.log(" ");console.log(ftp_file.name)
 
-          const ftp_method = new ftp_methods(ftp_file.name, ftp_connection);//here i need to fix the nomenclature, because i'm using the function get_file_content that is within of class soc_message but the function get_file_content is universal 
-          let file_content = await ftp_method.get_file_content(); //this function retruns an array with all messages that are inside of xml file
+          const ftp_method = new ftp_methods(ftp_file.name, ftp_connection);
+          let file_content = await ftp_method.get_file_content(); 
 
 
           if(file_content === undefined){
@@ -134,7 +134,6 @@ async function Decoding_analysis(context, scope) {
             return await account.devices.list( { page:1, filter } );
           }
 
-          
           const mqtt_message = new mqtt_messages(scope[0]);
           const tago_func = new tago_functions(account); 
 
@@ -144,6 +143,7 @@ async function Decoding_analysis(context, scope) {
           
           process.kill(process.pid, 'SIGINT');
       }
+
 
 
       let access_config_ftp_server = {
