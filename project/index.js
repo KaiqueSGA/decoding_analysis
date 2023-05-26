@@ -68,10 +68,11 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
               let device = await account_tago.devices.list({
                 page: 1,
                 filter,
-              });
+              }); 
+             
 
 
-              if(!device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
+              if(device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
                 const smart_one_c_message = new soc_messages();  
                 let decoded_code;
 
@@ -83,7 +84,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
                 decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
               }
               
-              else if(!device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
+              else if(device && device[0].tags.find(tag => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
                 const stx_message = new stx_messages();
                 let decoded_code;
 
@@ -94,7 +95,7 @@ async function Changing_algorithm(file_list, ftp_connection, account_tago){
              
              else{
                console.log("Device isn't registered in TAGO.IO")
-               continue;
+               continue; 
              }
              
          }; 
