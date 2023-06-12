@@ -166,7 +166,7 @@ class mqtt_message {
     tmpSTR = tmpSTR.replace("*", ",");
     var tmpSPLIT = tmpSTR.split(",");
 
-      if(tmpSPLIT[12] == "N") {
+      /*  if(tmpSPLIT[12] == "N") {
       const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
       const lbs_coordinates = this.esn.metadata.lbs0 && mac_coordinates.lat === 0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
      
@@ -222,7 +222,7 @@ class mqtt_message {
       this.esn.metadata.address = await location_functions.get_address_through_coordinates(coordinates.lat, coordinates.lng);
 
       return;
-    }; 
+    }; /*  
     /*
     Mode indicator D Mode indicator
     ‘A’ = Autonomous mode
@@ -283,6 +283,23 @@ class mqtt_message {
     tmpFLOAT = parseInt(tmpCOG);
     tmpDIR = this.get_cardinal_direction(tmpFLOAT);
 
+
+    const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
+    const lbs_coordinates = this.esn.metadata.lbs0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
+    
+
+    if(mac_coordinates.lat != 0 && mac_coordinates.lng != 0){
+      this.esn.metadata.mac_lat = mac_coordinates.lat;
+      this.esn.metadata.mac_lon = mac_coordinates.lng;
+      this.esn.metadata.mac_link = this.mapLINK + mac_coordinates.lat + "," + mac_coordinates.lng;
+    }
+   
+    if(lbs_coordinates.lat != 0 && lbs_coordinates.lng != 0){
+      this.esn.metadata.lbs_lat = lbs_coordinates.lat;
+      this.esn.metadata.lbs_lon = lbs_coordinates.lng;
+      this.esn.metadata.lbs_link = this.mapLINK + lbs_coordinates.lat + "," + lbs_coordinates.lng;
+    }
+    
     //MORE METADATA
     this.esn.metadata.lat = tmpLAT; 
     this.esn.metadata.lon = tmpLON; 

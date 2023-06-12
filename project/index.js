@@ -129,7 +129,7 @@ async function Decoding_analysis(context, scope) {
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
-            let esn = scope[0].value.split(";")[1];
+            let esn = scope[0].value.split(";")[1];console.log(scope[0].value)
 
             let filter = { tags:[ {key:"ESN", value:esn} ]}; 
             return await account.devices.list( { page:1, filter } );
@@ -139,7 +139,7 @@ async function Decoding_analysis(context, scope) {
           const tago_func = new tago_functions(account); 
 
           let device_id = await identify_device_on_tago();
-          let decoded_code = await mqtt_message.decode(scope); 
+          let decoded_code = await mqtt_message.decode(scope); console.log(decoded_code)
           decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id, decoded_code);
           
           process.kill(process.pid, 'SIGINT');
