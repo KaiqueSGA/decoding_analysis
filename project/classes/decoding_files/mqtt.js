@@ -284,9 +284,9 @@ class mqtt_message {
     tmpDIR = this.get_cardinal_direction(tmpFLOAT);
 
 
-    const mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
-    const lbs_coordinates = this.esn.metadata.lbs0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
-    
+    const mac_coordinates =  await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn); 
+    const lbs_coordinates =  await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm"); 
+
 
     if(mac_coordinates.lat != 0 && mac_coordinates.lng != 0){
       this.esn.metadata.mac_lat = mac_coordinates.lat;

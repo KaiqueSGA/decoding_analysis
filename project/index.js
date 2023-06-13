@@ -129,7 +129,7 @@ async function Decoding_analysis(context, scope) {
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
-            let esn = scope[0].value.split(";")[1];console.log(scope[0].value)
+            let esn = scope[0].value.split(";")[1];
 
             let filter = { tags:[ {key:"ESN", value:esn} ]}; 
             return await account.devices.list( { page:1, filter } );
