@@ -445,6 +445,32 @@ class mqtt_message {
 
     this.esn.metadata.rtc = tmpDATETIME;
     this.esn.time = tmpDATETIME;
+
+
+    /* Add this algorithim here...
+
+    function fncRTC(tmpSTR) {
+      let tmpINT = tmpSTR;
+      tmpINT = tmpINT.replaceAll("/", "");
+      tmpINT = tmpINT.replaceAll("-", "");
+      tmpINT = tmpINT.replaceAll(":", "");
+      tmpINT = tmpINT.replaceAll(" ", "");
+      tmpINT = tmpINT.replaceAll(".", "");
+
+      tmpINT = tmpINT.substring(0, 8);
+
+      if (parseInt(tmpINT) >= 20200801) {
+        tmpSTR = tmpSTR.replace(" ", "T")
+        let tmpDATE = new Date(tmpSTR);
+        tmpDATE.setHours(tmpDATE.getHours() - 3);
+        esn.time = tmpDATE;
+      }
+    }
+
+    if (tmpKEY.startsWith("RTC")) fncRTC(tmpVALUE);
+
+    
+    */
   };
 
 
@@ -518,7 +544,7 @@ class mqtt_message {
         var field_value = values_array[i].replace(field_key + ",", "").trim();
 
         if (field_key == "EOF") { i = values_array.length; }
-        this.esn.metadata[field_key.toLowerCase()] = field_value;
+        this.esn.metadata[field_key.toLowerCase()] = field_value;console.log(field_key)
 
         //Fields that need be calculated to find out its value
         if (field_key.startsWith("battery_volts")) { this.add_battery_field(field_value); }
