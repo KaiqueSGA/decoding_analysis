@@ -424,56 +424,57 @@ class mqtt_message {
 
 
 
-
-  get_rtc_time = (tmpSTR) => {
-    tmpSTR = tmpSTR.replace("*", ",");
-
-    var tmpSPLIT = tmpSTR.split(",");
-
-    var strDD = tmpSPLIT[2];
-    var strMM = tmpSPLIT[3];
-    var strYY = tmpSPLIT[4];
-
-    var strH = tmpSPLIT[1].substring(0, 2);
-    var strM = tmpSPLIT[1].substring(2, 4);
-    var strS = tmpSPLIT[1].substring(4, 6);
-
-    //DATE/TIME
-    var tmpDATE = strYY + "-" + strMM + "-" + strDD;
-    var tmpTIME = strH + ":" + strM + ":" + strS;
-    var tmpDATETIME = tmpDATE + "T" + tmpTIME + ".000Z"; 
-
-    this.esn.metadata.rtc = tmpDATETIME;
-    this.esn.time = tmpDATETIME;
-
-
-    /* Add this algorithim here...
-
-    function fncRTC(tmpSTR) {
-      let tmpINT = tmpSTR;
-      tmpINT = tmpINT.replaceAll("/", "");
-      tmpINT = tmpINT.replaceAll("-", "");
-      tmpINT = tmpINT.replaceAll(":", "");
-      tmpINT = tmpINT.replaceAll(" ", "");
-      tmpINT = tmpINT.replaceAll(".", "");
-
-      tmpINT = tmpINT.substring(0, 8);
-
-      if (parseInt(tmpINT) >= 20200801) {
-        tmpSTR = tmpSTR.replace(" ", "T")
-        let tmpDATE = new Date(tmpSTR);
-        tmpDATE.setHours(tmpDATE.getHours() - 3);
-        esn.time = tmpDATE;
-      }
-    }
-
-    if (tmpKEY.startsWith("RTC")) fncRTC(tmpVALUE);
+  validate_rtc(tmpSTR) {
+    let tmpINT = tmpSTR;
+    tmpINT = tmpINT.replaceAll("/", "");
+    tmpINT = tmpINT.replaceAll("-", "");
+    tmpINT = tmpINT.replaceAll(":", "");
+    tmpINT = tmpINT.replaceAll(" ", "");
+    tmpINT = tmpINT.replaceAll(".", "");
 
     
-    */
+    tmpINT = tmpINT.substring(0, 8);
+    
+    
+    if(parseInt(tmpINT) >= 20200801) { return true; }
+    else{ return false; }
+
+  }
+
+
+  get_rtc_time = (tmpSTR) => {console.log("ENTROU META")
+
+    let rtc_is_valid = this.validate_rtc(tmpSTR);
+
+    if(rtc_is_valid){
+      tmpSTR = tmpSTR.replace("*", ",");
+
+      var tmpSPLIT = tmpSTR.split(",");
+  
+      var strDD = tmpSPLIT[2];
+      var strMM = tmpSPLIT[3];
+      var strYY = tmpSPLIT[4];
+  
+      var strH = tmpSPLIT[1].substring(0, 2);
+      var strM = tmpSPLIT[1].substring(2, 4);
+      var strS = tmpSPLIT[1].substring(4, 6);
+  
+      //DATE/TIME
+      var tmpDATE = strYY + "-" + strMM + "-" + strDD;
+      var tmpTIME = strH + ":" + strM + ":" + strS;
+      var tmpDATETIME = tmpDATE + "T" + tmpTIME + ".000Z"; 
+  
+      this.esn.metadata.rtc = tmpDATETIME;
+      this.esn.time = tmpDATETIME;
+  
+    }else{
+      this.esn.time = new Date();
+    }
+    
   };
 
 
+  
 
 
 
@@ -544,7 +545,7 @@ class mqtt_message {
         var field_value = values_array[i].replace(field_key + ",", "").trim();
 
         if (field_key == "EOF") { i = values_array.length; }
-        this.esn.metadata[field_key.toLowerCase()] = field_value;console.log(field_key)
+        this.esn.metadata[field_key.toLowerCase()] = field_value;
 
         //Fields that need be calculated to find out its value
         if (field_key.startsWith("battery_volts")) { this.add_battery_field(field_value); }

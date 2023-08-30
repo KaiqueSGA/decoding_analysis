@@ -126,15 +126,6 @@ async function Decoding_analysis(context, scope) {
       const account = new Account({ token: envVars.account_token });
 
 
-      scope = [  
-        {
-          variable: 'payload',
-          value: 'esn;0-4242117;model,AT-G1018;hmv,0.1M4;fmv,0.8M4;mode,BEACON;media,GSM/GPRS;rtc,2023-03-24 18:40:23;battery_volts,3.84;imei,869951032048823;iccid,8944500601200071406F;cops,CLARO BR;jamm,+SJDR: NO JAMMING;rf_model,HC-12;rf_channel,001;rmc,$GNRMC,184028.000,V,2335.73047,S,04638.18496,W,000.0,000.0,240323,,,N,V*15;vtg,$GNVTG,000.0,T,,M,000.0,N,000.0,K,N*1C;zda,$GNZDA,184028.000,24,03,2023,00,00*49;psti20,$PSTI,20,0,1,1,0,N,1,0,-1.04,100.00,0.00,0.00*7A;psti60,$PSTI,060,0,V,0.00,34.16,0.00,,,,,,,,*60;psti63,$PSTI,063,G,0.52,-0.01,0.29,C,0.53,-0.01,0.28*03;psti65,$PSTI,065,A,0.85,-8.09,5.50,N,0.00,0.00,0.00*2F;psti70,$PSTI,070,T,I,57.6*2E;mac0,08:a7:c0:76:13:10;mac1,c0:3d:d9:10:79:f0;mac2,ce:32:e5:21:0b:80;lbs_mode,LTE;lbs0,LBS0,9610,290,-93,-56,-18,-8,46111,28560395,724,05,255',
-          metadata: { mqtt_topic: 'MQTT' }
-        }
-      ]
-
-
       if(scope.length !== 0){ console.log("MQTT")
 
           const identify_device_on_tago = async() => {
@@ -193,4 +184,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "67937c9b-f516-448c-aad2-c6369fbf8e7a" });
+module.exports = new Analysis(Decoding_analysis, { token: "a-1952e011-09ee-470d-bdb5-2a63f0aa2bdb" });
