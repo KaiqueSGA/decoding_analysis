@@ -568,6 +568,33 @@ class mqtt_message {
       let field_value = values_array.find(item => item.includes("rmc")).replace(field_key + ",", "").trim();
       await this.fncRMC(field_value);
 
+    }else{//se o device não enviar a sentença GNRMC vou executar este bloco
+        const location_functions = new location();
+        var mac_coordinates = this.esn.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.esn ) :{lat:0, lng:0};
+        var lbs_coordinates = this.esn.metadata.lbs0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.esn, this.esn.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
+
+        if(mac_coordinates.lat != 0 && mac_coordinates.lng != 0){
+          this.esn.metadata.mac_lat = mac_coordinates.lat;
+          this.esn.metadata.mac_lon = mac_coordinates.lng;
+          this.esn.metadata.mac_link = this.mapLINK + mac_coordinates.lat + "," + mac_coordinates.lng;
+        }
+      
+        if(lbs_coordinates.lat != 0 && lbs_coordinates.lng != 0){
+          this.esn.metadata.lbs_lat = lbs_coordinates.lat;
+          this.esn.metadata.lbs_lon = lbs_coordinates.lng;
+          this.esn.metadata.lbs_link = this.mapLINK + lbs_coordinates.lat + "," + lbs_coordinates.lng;
+        }
+
+        if(mac_coordinates.lat === 0  &&  lbs_coordinates.lat === 0){ process.kill(process.pid, 'SIGINT'); return;  }
+
+        let coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
+
+        this.esn.metadata.origin = mac_coordinates.lat != 0   ?"MAC"  :"LBS";
+        this.esn.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
+        this.esn.metadata.url_pin = {};
+        this.esn.metadata.url_pin.url = this.mapLINK + coordinates.lat + "," + coordinates.lng;
+        this.esn.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
+        this.esn.metadata.link = this.mapLINK + coordinates.lat + "," + coordinates.lng;
     }
 
     if(values_array.find(item => item.includes("psti20")) !== undefined){

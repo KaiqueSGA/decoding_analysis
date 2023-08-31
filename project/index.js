@@ -125,7 +125,7 @@ async function Decoding_analysis(context, scope) {
       const envVars = Utils.envToJson(context.environment);
       const resources = new Resources({ token: envVars.account_token });
 
-      if(scope.length !== 0){ console.log("MQTT");console.log(scope)
+      if(scope.length !== 0){ console.log("MQTT");
 
           const identify_device_on_tago = async() => {
             let esn = scope[0].value.split(";")[1];
@@ -186,4 +186,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "a-463d3409-101c-49dc-bcc4-68159cc8c698" });
+module.exports = new Analysis(Decoding_analysis, { token: "a-b97bf85d-be9e-4268-be57-6887b2c5224b" });
