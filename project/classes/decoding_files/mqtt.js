@@ -131,7 +131,7 @@ class mqtt_message {
       ":" +
       tmpSPLIT[3].substring(12, 14);
     var tmpDATETIME = tmpDATE + tmpTIME;
-    this.esn.metadata.RTC = tmpDATETIME;
+    this.esn.metadata.rtc = tmpDATETIME;
   };
 
 
@@ -428,54 +428,25 @@ class mqtt_message {
 
 
 
-  validate_rtc(tmpSTR) {
-    let tmpINT = tmpSTR;
-    tmpINT = tmpINT.replaceAll("/", "");
-    tmpINT = tmpINT.replaceAll("-", "");
-    tmpINT = tmpINT.replaceAll(":", "");
-    tmpINT = tmpINT.replaceAll(" ", "");
-    tmpINT = tmpINT.replaceAll(".", "");
+  fncZDA(tmpSTR) {
+    tmpSTR = tmpSTR.replace("*", ",");
 
-    
-    tmpINT = tmpINT.substring(0, 8);
-    
-    
-    if(parseInt(tmpINT) >= 20200801) { return true; }
-    else{ return false; }
+    var tmpSPLIT = tmpSTR.split(",");
 
-  }
+    var strDD = tmpSPLIT[2];
+    var strMM = tmpSPLIT[3];
+    var strYY = tmpSPLIT[4];
 
+    var strH = tmpSPLIT[1].substring(0, 2);
+    var strM = tmpSPLIT[1].substring(2, 4);
+    var strS = tmpSPLIT[1].substring(4, 6);
 
-  get_rtc_time = (tmpSTR) => {
-
-    let rtc_is_valid = this.validate_rtc(tmpSTR);
-
-    if(rtc_is_valid){
-      tmpSTR = tmpSTR.replace("*", ",");
-
-      var tmpSPLIT = tmpSTR.split(",");
-  
-      var strDD = tmpSPLIT[2];
-      var strMM = tmpSPLIT[3];
-      var strYY = tmpSPLIT[4];
-  
-      var strH = tmpSPLIT[1].substring(0, 2);
-      var strM = tmpSPLIT[1].substring(2, 4);
-      var strS = tmpSPLIT[1].substring(4, 6);
-  
-      //DATE/TIME
-      var tmpDATE = strYY + "-" + strMM + "-" + strDD;
-      var tmpTIME = strH + ":" + strM + ":" + strS;
-      var tmpDATETIME = tmpDATE + "T" + tmpTIME + ".000Z"; 
-  
-      this.esn.metadata.rtc = tmpDATETIME;
-      this.esn.time = tmpDATETIME;
-  
-    }else{
-      this.esn.time = new Date();
-    }
-    
-  };
+    //DATE/TIME
+    var tmpDATE = strYY + "-" + strMM + "-" + strDD;
+    var tmpTIME = strH + ":" + strM + ":" + strS;
+    var tmpDATETIME = tmpDATE + " " + tmpTIME;
+    this.esn.metadata.zda_time = tmpDATETIME;
+}
 
 
   
@@ -534,7 +505,6 @@ class mqtt_message {
 
   
   decode = async (scope) => {//public method
-    
     var values_array = this.esn.value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
 
     this.esn.metadata.raw_data = scope[0].value;
@@ -558,7 +528,7 @@ class mqtt_message {
         else if (field_key.startsWith("gns")) { this.fncGNS(field_value);} //SIM7000G Proprietary GPS Sentence
         else if (field_key.startsWith("gll")) { this.fncGLL(field_value); }
         else if (field_key.startsWith("gga")) { this.fncGGA(field_value); }
-        else if (field_key.startsWith("zda")) { this.get_rtc_time(field_value); } 
+        else if (field_key.startsWith("zda")) { this.fncZDA(field_value); } 
         else if (field_key.startsWith("vtg")) { this.fncVTG(field_value); } 
     }
 
@@ -605,13 +575,20 @@ class mqtt_message {
 
     }
 
+    
+    
+     if(this.esn.metadata.zda_time){
+      this.esn.time = this.esn.metadata.zda_time.replace(" ", "T").concat("Z");
+      delete this.esn.metadata.zda_time;
+    }
+    else if(this.esn.metadata.rtc) { this.esn.time = this.esn.metadata.RTC; }
+ 
 
     
     delete this.esn.metadata.mqtt_topic; //clean mqtt_topic
     delete this.esn.metadata.EOF; //clean EOF mark
 
     //Adjust variable date/time
-    if (this.esn.metadata.RTC) { this.esn.time = this.esn.metadata.RTC; }
     return this.esn;
   };
 

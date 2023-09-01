@@ -137,7 +137,7 @@ async function Decoding_analysis(context, scope) {
             else{ return await resources.devices.list( { page:1, filter } ); };
           }
 
-          const mqtt_message = new mqtt_messages(scope[0]);
+          const mqtt_message = new mqtt_messages(scope[0]); 
           const tago_func = new tago_functions(resources); 
 
           let device_id = await identify_device_on_tago();
