@@ -7,7 +7,7 @@ const Ftp_server = require("ftp");
 
 const stx_messages = require("./classes/decoding_files/stx.js");
 const soc_messages = require("./classes/decoding_files/soc.js");
-const mqtt_messages = require("./classes/decoding_files/mqtt.js");
+const mqtt_messages = require("./classes/decoding_files/mqtt/mqtt_message");
 const tago_functions = require("./classes/Apis/tago");
 const ftp_methods = require("./classes/Apis/ftp");
 const location = require("./classes/Apis/location.js");
@@ -125,6 +125,16 @@ async function Decoding_analysis(context, scope) {
       const envVars = Utils.envToJson(context.environment);
       const resources = new Resources({ token: envVars.account_token });
 
+
+      scope = [  
+        {
+          variable: 'payload',
+          value: 'esn;0-4242117;model,AT-G1018;hmv,0.1M4;fmv,0.8M4;mode,BEACON;media,GSM/GPRS;rtc,2023-03-24 18:40:23;battery_volts,3.84;imei,869951032048823;iccid,8944500601200071406F;cops,CLARO BR;jamm,+SJDR: NO JAMMING;rf_model,HC-12;rf_channel,001;rmc,$GNRMC,184028.000,V,2335.73047,S,04638.18496,W,000.0,000.0,240323,,,N,V*15;vtg,$GNVTG,000.0,T,,M,000.0,N,000.0,K,N*1C;zda,$GNZDA,180528.000,04,09,2023,00,00*49;psti20,$PSTI,20,0,1,1,0,N,1,0,-1.04,100.00,0.00,0.00*7A;psti60,$PSTI,060,0,V,0.00,34.16,0.00,,,,,,,,*60;psti63,$PSTI,063,G,0.52,-0.01,0.29,C,0.53,-0.01,0.28*03;psti65,$PSTI,065,A,0.85,-8.09,5.50,N,0.00,0.00,0.00*2F;psti70,$PSTI,070,T,I,57.6*2E;mac0,08:a7:c0:76:13:10;mac1,c0:3d:d9:10:79:f0;mac2,ce:32:e5:21:0b:80;lbs_mode,LTE;lbs0,LBS0,9610,290,-93,-56,-18,-8,46111,28560395,724,05,255',
+          metadata: { mqtt_topic: 'MQTT' }
+        }
+      ]
+
+
       if(scope.length !== 0){ console.log("MQTT");
 
           const identify_device_on_tago = async() => {
@@ -137,14 +147,13 @@ async function Decoding_analysis(context, scope) {
             else{ return await resources.devices.list( { page:1, filter } ); };
           }
 
-          const mqtt_message = new mqtt_messages(scope[0]); 
           const tago_func = new tago_functions(resources); 
 
           let device_id = await identify_device_on_tago();
-          let decoded_code = await mqtt_message.decode(scope); 
+          let decoded_code = await mqtt_messages.decode(scope); console.log(decoded_code)
           decoded_code !== undefined && await tago_func.insert_on_tago(decoded_code, Device, device_id[0].id);
           
-          process.kill(process.pid, 'SIGINT');
+          process.kill(process.pid, 'SIGINT'); 
       }
 
 
@@ -186,4 +195,4 @@ async function Decoding_analysis(context, scope) {
 
 };
 
-module.exports = new Analysis(Decoding_analysis, { token: "a-b97bf85d-be9e-4268-be57-6887b2c5224b" });
+module.exports = new Analysis(Decoding_analysis, { token: "a-d613ab14-9937-49ae-aa53-9c5487f2547c" });
