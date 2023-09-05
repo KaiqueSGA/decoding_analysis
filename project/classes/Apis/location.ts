@@ -1,16 +1,16 @@
 const axios = require('axios');
 
 
-class location_apis {
+export class location_apis {
 
 
-     prepare_mac_parameterers_for_requisition = (wifi_fields, esn) => {//private method
+     prepare_mac_parameterers_for_requisition = (wifi_fields: any, esn: any) => {//private method
             let wifi_parameters_list = new Array();
     
             if(wifi_fields === undefined){
                 return; 
             }else{
-                wifi_fields.forEach(key => {
+                wifi_fields.forEach((key: any) => {
                 if(!esn.metadata[key]){//if there isn´t nothing field with the specific wifi name, will retun the function.
                   return
                 }
@@ -32,12 +32,12 @@ class location_apis {
 
 
 
-      prepare_lbs_parameters_for_requesition = (keyTag,esn,dataType) => {
+      prepare_lbs_parameters_for_requesition = (keyTag: any,esn: any,dataType: any) => {
         if(keyTag === undefined){ return; }
 
         let lbsList = new Array();   
           
-              keyTag.forEach(key => {
+              keyTag.forEach((key: any) => {
       
                   if(!esn.metadata[key]){ return; }// if there isn´t nothing field with the specific lbs, will retun the function.
               
@@ -119,7 +119,7 @@ class location_apis {
      
      
      
-     get_address_through_coordinates = async(latitude, longitude) =>{//public method
+     get_address_through_coordinates = async(latitude: any, longitude: any) =>{//public method
         const request = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
         
         if(request.data.address !== undefined){
@@ -138,7 +138,7 @@ class location_apis {
 
 
 
-       get_coordinates_through_mac_datas = async(wifi_fields, esn) =>{
+       get_coordinates_through_mac_datas = async(wifi_fields: any, esn: any) =>{
           
          let list = this.prepare_mac_parameterers_for_requisition(wifi_fields, esn);
         
@@ -172,11 +172,11 @@ class location_apis {
 
 
 
-     get_coordinates_through_lbs_datas = async(lbs_fields, esn, data_type) =>{
+     get_coordinates_through_lbs_datas = async(lbs_fields: any, esn: any, data_type: any) =>{
          try{
-                 let list = this.prepare_lbs_parameters_for_requesition(lbs_fields, esn, data_type);
+                 let list: any = this.prepare_lbs_parameters_for_requesition(lbs_fields, esn, data_type);
              
-                 let cellTowers = list.map((lbs) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
+                 let cellTowers = list.map((lbs: any) => {/* I create a array with several objects, this array will be used how parameter in the google API  */
                       return {
                          cellId: data_type === "lte" ?  parseInt(lbs.cellid) :parseInt(lbs.cellid),
                          locationAreaCode :data_type === "lte" ?parseInt(lbs.lac) :parseInt(lbs.lac),
@@ -187,7 +187,7 @@ class location_apis {
           
                  
                   
-                 const lbs0 = list.find((x) => x.cell === "LBS0");
+                 const lbs0 = list.find((x: any) => x.cell === "LBS0");
                  if(!lbs0){ return {lat:0, lng:0} };
           
             
@@ -207,7 +207,7 @@ class location_apis {
                        considerIp: false,
                        cellTowers: data_type === "lte" ? [cellTowers[0]] :cellTowers
                       }
-                    }).catch((err) => console.log())
+                    }).catch((err: any) => console.log())
                             
                           
                     if(!result) { return {lat:0, lng:0} };
@@ -223,4 +223,3 @@ class location_apis {
 }
 
 
-module.exports = location_apis;

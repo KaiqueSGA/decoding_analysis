@@ -1,11 +1,11 @@
 
 
 class ftp_methods {
-  xml_file_name;
-  ftp_connection;
+  xml_file_name: string;
+  ftp_connection: any;
 
 
-   constructor(xml_file_name, ftp_connection){
+   constructor(xml_file_name: string, ftp_connection: any){
      this.xml_file_name = xml_file_name;
      this.ftp_connection = ftp_connection;
    }
@@ -13,18 +13,18 @@ class ftp_methods {
 
 
 
-    async get_file_content(){//public method
+    async get_file_content(): Promise<any>{//public method
         let file_content;
         
         return new Promise((resolve,reject) => {
-             this.ftp_connection.get(`./${this.xml_file_name}`, async function(err, stream) {
+             this.ftp_connection.get(`./${this.xml_file_name}`, async function(err: any, stream: any) {
                   
                 if(err){ throw err }
                 
                 else{
                     stream.once('close', function() {});
 
-                    await stream.on('data', (chunk) => {//themethod stream.on is responsible per catch the file content and store the content in the variable;
+                    await stream.on('data', (chunk: any) => {//themethod stream.on is responsible per catch the file content and store the content in the variable;
                         file_content = "";
                         file_content = file_content + chunk;
 
@@ -50,11 +50,11 @@ class ftp_methods {
 
 
 
-    async delete_file_from_ftp(){//public method
+    async delete_file_from_ftp(): Promise<void>{//public method
       
         return new Promise((resolve,reject) => {
 
-           this.ftp_connection.delete(`./${this.xml_file_name}`,function(err){
+           this.ftp_connection.delete(`./${this.xml_file_name}`,function(err: any){
              if(err){
                return err;
              }else{

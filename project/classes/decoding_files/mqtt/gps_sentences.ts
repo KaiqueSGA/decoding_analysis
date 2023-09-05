@@ -1,27 +1,28 @@
-const location = require("../../Apis/location");
+import { location_apis } from "../../Apis/location";
 
 
 class gps_sentences {
-    new_variable_to_be_inserted;
-    decoded_message;
-    mapLINK = "https://www.google.com/maps/search/?api=1&query=";
+    coordinates_origin: string = "";
+    new_variable_to_be_inserted: any;
+    decoded_message: any;
+    mapLINK: string = "https://www.google.com/maps/search/?api=1&query=";
 
-    constructor(new_variable_to_be_inserted){
+    constructor(new_variable_to_be_inserted: any){
         this.new_variable_to_be_inserted = new_variable_to_be_inserted;
     };
    
 
-    decode_gns(raw_message){//public method
+    public decode_gns(raw_message: string): void{//public method
         raw_message = raw_message.replace("*", ",");
         raw_message = raw_message.replace(":", ",");
     
-        var tmpSPLIT = raw_message.split(",");
+        var tmpSPLIT: Array<string> = raw_message.split(",");
     
         //fix mode: 0,1,2
-        var tmpFIX = tmpSPLIT[9];
-        if (tmpFIX == 0) return; //new_variable_to_be_inserted.metadata.ORIGIN = "ERR";
-        if (tmpFIX == 1) new_variable_to_be_inserted.metadata.origin = "GPS";
-        if (tmpFIX == 2) new_variable_to_be_inserted.metadata.origin = "GPS-DR";
+        var tmpFIX: string = tmpSPLIT[9];
+        if (tmpFIX == '0') return; //new_variable_to_be_inserted.metadata.ORIGIN = "ERR";
+        if (tmpFIX == '1') this.new_variable_to_be_inserted.metadata.origin = "GPS";
+        if (tmpFIX == '2') this.new_variable_to_be_inserted.metadata.origin = "GPS-DR";
     
         //location
         this.new_variable_to_be_inserted.location = {};
@@ -43,7 +44,7 @@ class gps_sentences {
         this.new_variable_to_be_inserted.metadata.cog = tmpSPLIT[8]; //field name to lowercase
     
         //DIR = Cardinals
-        var tmpCOG = new_variable_to_be_inserted.metadata.cog; //field name to lowercase
+        var tmpCOG = this.new_variable_to_be_inserted.metadata.cog; //field name to lowercase
         var tmpFLOAT = 0.0;
         var tmpDIR = "";
         tmpFLOAT = parseInt(tmpCOG);
@@ -72,11 +73,11 @@ class gps_sentences {
 
 
 
-    decode_gps166(raw_message){//public method
-        var tmpFLOAT = parseFloat(raw_message);
+    public decode_gps166(raw_message: string): string{//public method
+        var tmpFLOAT: number = parseFloat(raw_message);
         tmpFLOAT = tmpFLOAT / 100;
 
-        var tmpINT = parseInt(String(tmpFLOAT));
+        var tmpINT: number = parseInt(String(tmpFLOAT));
 
         tmpFLOAT = tmpFLOAT - tmpINT;
         tmpFLOAT = tmpFLOAT / 0.6;
@@ -91,15 +92,15 @@ class gps_sentences {
 
 
 
-    async decode_rmc(raw_message){
-        var location_functions = new location();
+    public async decode_rmc(raw_message: string): Promise<void>{
+        var location_functions = new location_apis();
 
         raw_message = raw_message.replace("*", ",");
-        var tmpSPLIT = raw_message.split(",");
+        var tmpSPLIT: Array<string> = raw_message.split(",");
     
     
-        var mac_coordinates = this.new_variable_to_be_inserted.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.new_variable_to_be_inserted ) :{lat:0, lng:0};
-        var lbs_coordinates = this.new_variable_to_be_inserted.metadata.lbs0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.new_variable_to_be_inserted, this.new_variable_to_be_inserted.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
+        var mac_coordinates: any = this.new_variable_to_be_inserted.metadata.mac0 ?await location_functions.get_coordinates_through_mac_datas( ["mac0", "mac1", "mac2"], this.new_variable_to_be_inserted ) :{lat:0, lng:0};
+        var lbs_coordinates: any = this.new_variable_to_be_inserted.metadata.lbs0 ?await location_functions.get_coordinates_through_lbs_datas( ["lbs0", "lbs1", "lbs2"], this.new_variable_to_be_inserted, this.new_variable_to_be_inserted.metadata.lbs_mode === "LTE" ?"lte" :"gsm" ) :{lat:0, lng:0}; 
     
         if(mac_coordinates.lat != 0 && mac_coordinates.lng != 0){
           this.new_variable_to_be_inserted.metadata.mac_lat = mac_coordinates.lat;
@@ -123,26 +124,26 @@ class gps_sentences {
           this.coordinates_origin = mac_coordinates.lat != 0   ?"MAC"  :"LBS";
     
            if(coordinates.lat === 0 || coordinates.lng === 0){
-            let tmpLAT = tmpSPLIT[3];
-            let tmpLON = tmpSPLIT[5];
+            let tmpLAT: string = tmpSPLIT[3];
+            let tmpLON: string = tmpSPLIT[5];
     
-            let tmpNS = tmpSPLIT[4];
-            var tmpEW = tmpSPLIT[6];
+            let tmpNS: string = tmpSPLIT[4];
+            var tmpEW: string = tmpSPLIT[6];
     
-            tmpLAT = this.fncGPS166(tmpLAT);
+            tmpLAT = this.decode_gps166(tmpLAT);
             if(tmpNS == "S") { coordinates.lat = "-" + tmpLAT; }
         
-            tmpLON = this.fncGPS166(tmpLON);
+            tmpLON = this.decode_gps166(tmpLON);
             if(tmpEW == "W") { coordinates.lng = "-" + tmpLON; }
           } 
     
     
     
-          var tmpSPD = tmpSPLIT[7];
-          var tmpCOG = tmpSPLIT[8];
+          var tmpSPD: string = tmpSPLIT[7];
+          var tmpCOG: string = tmpSPLIT[8];
           var tmpFLOAT = 0.0;
           var tmpDIR = "";
-          var tmpIEC = tmpSPLIT[13];
+          var tmpIEC: string = tmpSPLIT[13];
     
           this.new_variable_to_be_inserted.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
     
@@ -152,8 +153,7 @@ class gps_sentences {
           this.new_variable_to_be_inserted.metadata.link = this.mapLINK + coordinates.lat + "," + coordinates.lng;
           
           var knot = 1.852;
-          tmpSPD = tmpSPD * knot;
-          tmpSPD = tmpSPD.toFixed(1);
+          tmpSPD = (parseInt(tmpSPD) * knot).toFixed(1);
       
           //COG = Course Over the Ground to DIR 👎�
           tmpFLOAT = parseInt(tmpCOG);
@@ -173,21 +173,21 @@ class gps_sentences {
     
         else{
     
-        var tmpLAT = tmpSPLIT[3];
-        var tmpNS = tmpSPLIT[4];
-        var tmpLON = tmpSPLIT[5];
-        var tmpEW = tmpSPLIT[6];
-        var tmpSPD = tmpSPLIT[7];
-        var tmpCOG = tmpSPLIT[8];
-        var tmpFLOAT = 0.0;
-        var tmpDIR = "";
+        var tmpLAT: string = tmpSPLIT[3];
+        var tmpNS: string = tmpSPLIT[4];
+        var tmpLON: string = tmpSPLIT[5];
+        var tmpEW: string = tmpSPLIT[6];
+        var tmpSPD: string = tmpSPLIT[7];
+        var tmpCOG: string = tmpSPLIT[8];
+        var tmpFLOAT: number = 0.0;
+        var tmpDIR: string = "";
     
-        var tmpIEC = tmpSPLIT[13];
+        var tmpIEC: string = tmpSPLIT[13];
     
-        tmpLAT = this.fncGPS166(tmpLAT);
+        tmpLAT = this.decode_gps166(tmpLAT);
         if (tmpNS == "S") tmpLAT = "-" + tmpLAT;
     
-        tmpLON = this.fncGPS166(tmpLON);
+        tmpLON = this.decode_gps166(tmpLON);
         if (tmpEW == "W") tmpLON = "-" + tmpLON;
     
         //location
@@ -205,8 +205,7 @@ class gps_sentences {
     
         //Speed from knots to Km/h
         var knot = 1.852;
-        tmpSPD = tmpSPD * knot;
-        tmpSPD = tmpSPD.toFixed(1);
+        tmpSPD = (parseInt(tmpSPD) * knot).toFixed(1);
     
         //COG = Course Over the Ground to DIR 👎�
         tmpFLOAT = parseInt(tmpCOG);
@@ -228,7 +227,7 @@ class gps_sentences {
 
 
 
-    decode_gll(raw_message){
+    public decode_gll(raw_message: string): void{
         raw_message = raw_message.replace("*", ",");
 
         var tmpSPLIT = raw_message.split(",");
@@ -254,24 +253,24 @@ class gps_sentences {
         var tmpLON = tmpSPLIT[3];
         var tmpEW = tmpSPLIT[4];
 
-        tmpLAT = this.fncGPS166(tmpLAT);
+        tmpLAT = this.decode_gps166(tmpLAT);
         if (tmpNS == "S") tmpLAT = "-" + tmpLAT;
 
-        tmpLON = this.fncGPS166(tmpLON);
+        tmpLON = this.decode_gps166(tmpLON);
         if (tmpEW == "W") tmpLON = "-" + tmpLON;
 
         //location
-        new_variable_to_be_inserted.location = {};
-        new_variable_to_be_inserted.location.lat = parseFloat(tmpLAT);
-        new_variable_to_be_inserted.location.lng = parseFloat(tmpLON);
+        this.new_variable_to_be_inserted.location = {};
+        this.new_variable_to_be_inserted.location.lat = parseFloat(tmpLAT);
+        this.new_variable_to_be_inserted.location.lng = parseFloat(tmpLON);
 
         //MAPLINK
         var tmpLATLON = tmpSPLIT[3] + "," + tmpSPLIT[4];
-        var tmpLINK = mapLINK + tmpLATLON;
-        new_variable_to_be_inserted.metadata.url_pin = {};
-        new_variable_to_be_inserted.metadata.url_pin.url = tmpLINK;
-        new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + tmpLATLON;
-        new_variable_to_be_inserted.metadata.link = tmpLINK;
+        var tmpLINK = this.mapLINK + tmpLATLON;
+        this.new_variable_to_be_inserted.metadata.url_pin = {};
+        this.new_variable_to_be_inserted.metadata.url_pin.url = tmpLINK;
+        this.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + tmpLATLON;
+        this.new_variable_to_be_inserted.metadata.link = tmpLINK;
 
         //MORE METADATA
         this.new_variable_to_be_inserted.metadata.lat = tmpLAT;
@@ -282,7 +281,7 @@ class gps_sentences {
 
 
 
-    decode_gga(raw_message){
+    public decode_gga(raw_message: string): void{
         raw_message = raw_message.replace("*", ",");
 
         var tmpSPLIT = raw_message.split(",");
@@ -306,20 +305,20 @@ class gps_sentences {
         var tmpEW = tmpSPLIT[5];
         var tmpALT = tmpSPLIT[9];
     
-        tmpLAT = this.fncGPS166(tmpLAT);
+        tmpLAT = this.decode_gps166(tmpLAT);
         if (tmpNS == "S") tmpLAT = "-" + tmpLAT;
     
-        tmpLON = this.fncGPS166(tmpLON);
+        tmpLON = this.decode_gps166(tmpLON);
         if (tmpEW == "W") tmpLON = "-" + tmpLON;
     
         //location
-        new_variable_to_be_inserted.location = {};
-        new_variable_to_be_inserted.location.lat = parseFloat(tmpLAT);
-        new_variable_to_be_inserted.location.lng = parseFloat(tmpLON);
+        this.new_variable_to_be_inserted.location = {};
+        this.new_variable_to_be_inserted.location.lat = parseFloat(tmpLAT);
+        this.new_variable_to_be_inserted.location.lng = parseFloat(tmpLON);
     
         //MAPLINK
         var tmpLATLON = tmpSPLIT[3] + "," + tmpSPLIT[4];
-        var tmpLINK = mapLINK + tmpLATLON;
+        var tmpLINK = this.mapLINK + tmpLATLON;
         this.new_variable_to_be_inserted.metadata.url_pin = {};
         this.new_variable_to_be_inserted.metadata.url_pin.url = tmpLINK;
         this.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + tmpLATLON;
@@ -335,23 +334,23 @@ class gps_sentences {
 
 
 
-    decode_zda(raw_message){
+    public decode_zda(raw_message: string): void{
         raw_message = raw_message.replace("*", ",");
 
-        var tmpSPLIT = raw_message.split(",");
+        var tmpSPLIT: Array<string> = raw_message.split(",");
 
-        var strDD = tmpSPLIT[2];
-        var strMM = tmpSPLIT[3];
-        var strYY = tmpSPLIT[4];
+        var strDD: string = tmpSPLIT[2];
+        var strMM: string = tmpSPLIT[3];
+        var strYY: string = tmpSPLIT[4];
 
-        var strH = tmpSPLIT[1].substring(0, 2);
-        var strM = tmpSPLIT[1].substring(2, 4);
-        var strS = tmpSPLIT[1].substring(4, 6);
+        var strH: string = tmpSPLIT[1].substring(0, 2);
+        var strM: string = tmpSPLIT[1].substring(2, 4);
+        var strS: string = tmpSPLIT[1].substring(4, 6);
 
         //DATE/TIME
-        var tmpDATE = strYY + "-" + strMM + "-" + strDD;
-        var tmpTIME = strH + ":" + strM + ":" + strS;
-        var tmpDATETIME = tmpDATE + " " + tmpTIME;
+        var tmpDATE: string = strYY + "-" + strMM + "-" + strDD;
+        var tmpTIME: string = strH + ":" + strM + ":" + strS;
+        var tmpDATETIME: string = tmpDATE + " " + tmpTIME;
         this.new_variable_to_be_inserted.metadata.zda_time = tmpDATETIME;
     };
 
@@ -359,7 +358,7 @@ class gps_sentences {
 
 
 
-    decode_vtg(raw_message){
+    public decode_vtg(raw_message: string): void{
       raw_message = raw_message.replace("*", ",");
 
       var tmpSPLIT = raw_message.split(",");
@@ -382,20 +381,20 @@ class gps_sentences {
 
 
 
-    decode_psti20(raw_message){
+    public decode_psti20(raw_message: string): void{
         let dr_cal = raw_message.split(",")[2];
         let gyro_cal = raw_message.split(",")[3];
     
         raw_message = raw_message.replace("*", ",");
     
         var tmpSPLIT = raw_message.split(",");
-        raw_message = null;
+        raw_message = "null";
         if (tmpSPLIT[6] == "A") raw_message = "GPS"; 
         if (tmpSPLIT[6] == "E") raw_message = "GPS-DR";
         if (tmpSPLIT[6] == "N") raw_message = "ERROR";
     
        
-        if(raw_message === null || raw_message === "ERROR") { raw_message = this.coordinates_origin }
+        if(raw_message === "null" || raw_message === "ERROR") { raw_message = this.coordinates_origin }
     
     
         this.new_variable_to_be_inserted.metadata.origin = raw_message;
@@ -408,11 +407,11 @@ class gps_sentences {
 
 
     //CBC = BATTERY
-  add_battery_field = (raw_message) => {
+   public add_battery_field(raw_message: string):void {
     //private method
     raw_message = raw_message.replace(":", ",");
-    var tmpSPLIT = raw_message.split(",");
-    var tmpFLOAT = tmpSPLIT[3];
+    var tmpSPLIT: Array<string> = raw_message.split(",");
+    var tmpFLOAT: number = parseInt(tmpSPLIT[3]);
     tmpFLOAT = tmpFLOAT / 1000;
     
     this.new_variable_to_be_inserted.metadata.battery = tmpFLOAT;
@@ -422,7 +421,7 @@ class gps_sentences {
 
 
 
-  add_operator_field = (raw_message) => {
+  public add_operator_field(raw_message: any): void{
     //COPS =  OPERATORS
     raw_message = raw_message.replace("cops:", "");
     raw_message = raw_message.trim();
@@ -433,7 +432,7 @@ class gps_sentences {
 
 
 
-  add_jamming_state = (raw_message) => {
+  public add_jamming_state(raw_message: string): void {
     //private method
     raw_message = raw_message.replace("SJDR: ", "");
     raw_message = raw_message.trim();
@@ -444,7 +443,7 @@ class gps_sentences {
 
 
 
-  get_cardinal_direction = (tmpFLOAT) => {
+  public get_cardinal_direction(tmpFLOAT: number): string {
     //private method
     var tmpDIR = "NULL";
 
