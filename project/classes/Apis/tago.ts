@@ -1,7 +1,7 @@
 
 
 
-class tago_functions {
+export class tago_functions {
     account;
 
     constructor(account: any){
@@ -17,7 +17,6 @@ class tago_functions {
         return console.log(await tago_device.sendData(decoded_code).catch((err: any) => console.log(err)));
     }
 
-}
+};
 
 
-module.exports = tago_functions;

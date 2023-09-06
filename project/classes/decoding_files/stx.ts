@@ -1,6 +1,6 @@
 import { location_apis } from "../Apis/location";
 
-class stx_message {
+export class stx_message {
 
 
   public catch_payload (stu_message: string): string{
@@ -95,7 +95,7 @@ class stx_message {
 
 
 
-  async decode(file_content: string, esn_value: string, unixtime: string) {
+  async decode(file_content: string, esn_value: string, unixtime: Date) {
     const location_functions = new location_apis();
 
     let payload: string = this.catch_payload(file_content);
@@ -139,6 +139,6 @@ class stx_message {
     };
 
   }
-}
+};
 
-module.exports = stx_message;
+

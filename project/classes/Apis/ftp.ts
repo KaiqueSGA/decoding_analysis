@@ -1,6 +1,6 @@
 
 
-class ftp_methods {
+export class ftp_methods {
   xml_file_name: string;
   ftp_connection: any;
 
@@ -71,8 +71,4 @@ class ftp_methods {
 
 
     //
-}
-
-
-
-module.exports = ftp_methods;
+};

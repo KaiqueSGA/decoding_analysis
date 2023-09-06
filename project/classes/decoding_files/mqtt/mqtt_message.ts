@@ -1,9 +1,9 @@
 import { location_apis } from "../../Apis/location";
-const gps_sentences = require("../mqtt/gps_sentences");
+import { gps_sentences } from "../mqtt/gps_sentences";
 
 
   
-  async function decode(scope: any){
+  export default async function decode(scope: any){
     
     var values_array: Array<string> = scope[0].value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
     const gps_sentence = new gps_sentences({ variable:values_array[0], value:values_array[1], metadata: { raw_data: scope[0].value}}); 
@@ -89,6 +89,3 @@ const gps_sentences = require("../mqtt/gps_sentences");
     delete gps_sentence.new_variable_to_be_inserted.metadata.EOF; //clean EOF mark
     return gps_sentence.new_variable_to_be_inserted; 
   };
-
- 
-  module.exports = { decode: decode };
