@@ -16,9 +16,9 @@ import { location_apis } from "./classes/Apis/location.ts";
 
 
 const cacth_esn = (data: string): string =>{//what is ESN? Read in our README.
-  let help = data.indexOf("<esn>");
-  let firstTag = data.indexOf(">",help);
-  let secondTag = data.indexOf("</esn>",firstTag);
+  let help: number = data.indexOf("<esn>");
+  let firstTag: number = data.indexOf(">",help);
+  let secondTag: number = data.indexOf("</esn>",firstTag);
   return data.substring(firstTag + 1,secondTag)
 };
 
@@ -46,7 +46,6 @@ const catch_time_stamp = (data: string): Date => {
 
 async function Changing_algorithm(file_list: Array<any>, ftp_connection: any, account_tago: any){ 
   const tago_function = new tago_functions(account_tago);
-  const location_functions = new location_apis();
 
   for await(let ftp_file of file_list){
       try{console.log(" ");console.log(ftp_file.name)
@@ -68,25 +67,15 @@ async function Changing_algorithm(file_list: Array<any>, ftp_connection: any, ac
               let filter = { tags:[ {key:"ESN", value:esn_value} ]};
               let device = await account_tago.devices.list( { page: 1, filter }); 
 
-              /* if(device && device[0].tags.find( (tag: any) => tag.key === 'TYPE' && tag.value === 'SOC') ){console.log("SOC");
-                
-                const smart_one_c_message = new soc_messages();  
-                let decoded_code: any = smart_one_c_message.decode(stu_message, esn_value);
-
-                decoded_code !== undefined && ( decoded_code.metadata.address = await location_functions.get_address_through_coordinates(decoded_code.metadata.lat, decoded_code.metadata.lon) );
-                decoded_code !== undefined && ( decoded_code.time = time_stamp );
-                decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
-                decoded_code !== undefined && (await ftp_method.delete_file_from_ftp());
-              }
-               */
+             
               if(device && device[0].tags.find((tag: any) => tag.key === 'TYPE' && tag.value === 'STX') ){console.log("STX")
-                
                 const stx_message = new stx_messages();
                 let decoded_code: any = await stx_message.decode(stu_message, esn_value, time_stamp);
 
                 decoded_code !== undefined && (await tago_function.insert_on_tago(decoded_code, Device, device[0].id));
                 await ftp_method.delete_file_from_ftp();
              }
+
              
              else{
                console.log("Device isn't registered in TAGO.IO")
