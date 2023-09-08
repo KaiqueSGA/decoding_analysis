@@ -4,13 +4,11 @@ import { gps_sentences } from "../mqtt/gps_sentences";
 
   
   export default async function decode(scope: any){
-    
     var values_array: Array<string> = scope[0].value.split(";"); //The device send a string with many values inside of field value(these values are represanting an object, this is the structure: ESN,176823;battery,good;), each 'field' is separeted by ";" and the field key and its value are separeted by "," .
     const gps_sentence = new gps_sentences({ variable:values_array[0], value:values_array[1], metadata: { raw_data: scope[0].value}}); 
 
 
-    for (let i = 2; i < values_array.length; i++) {
-        //I'm starting by the value 2 because the 2 first fields aren't necessary to this part of code
+    for(let i = 2; i < values_array.length; i++){//I'm starting by the value 2 because the 2 first fields aren't necessary to this part of code
         values_array[i] = values_array[i].replace("+", "");
 
         var field_key: string = values_array[i].split(",")[0].trim();
@@ -20,22 +18,24 @@ import { gps_sentences } from "../mqtt/gps_sentences";
         gps_sentence.new_variable_to_be_inserted.metadata[field_key.toLowerCase()] = field_value;
 
         //Fields that need be calculated to find out its value
-        if (field_key.startsWith("battery_volts")) { gps_sentence.add_battery_field(field_value); }
-        else if (field_key.startsWith("cops")) { gps_sentence.add_operator_field(field_value); }
-        else if (field_key.startsWith("jamm")) { gps_sentence.add_jamming_state(field_value); }
-        else if (field_key.startsWith("gns")) { gps_sentence.decode_gns(field_value);} //SIM7000G Proprietary GPS Sentence
-        else if (field_key.startsWith("gll")) { gps_sentence.decode_gll(field_value); }
-        else if (field_key.startsWith("gga")) { gps_sentence.decode_gga(field_value); }
-        else if (field_key.startsWith("zda")) { gps_sentence.decode_zda(field_value); } 
-        else if (field_key.startsWith("vtg")) { gps_sentence.decode_vtg(field_value); } 
+        if(field_key.startsWith("battery_volts")) { gps_sentence.add_battery_field(field_value); }
+        else if(field_key.startsWith("cops")) { gps_sentence.add_operator_field(field_value); }
+        else if(field_key.startsWith("jamm")) { gps_sentence.add_jamming_state(field_value); }
+        else if(field_key.startsWith("gns")) { gps_sentence.decode_gns(field_value);} //SIM7000G Proprietary GPS Sentence
+        else if(field_key.startsWith("gll")) { gps_sentence.decode_gll(field_value); }
+        else if(field_key.startsWith("gga")) { gps_sentence.decode_gga(field_value); }
+        else if(field_key.startsWith("zda")) { gps_sentence.decode_zda(field_value); } 
+        else if(field_key.startsWith("vtg")) { gps_sentence.decode_vtg(field_value); } 
     }
 
+
+     
     let rmc_value: any | undefined = values_array.find(item => item.includes("rmc"));
-     if(rmc_value !== undefined){
-      
-      let field_key: string = rmc_value.split(",")[0].trim();
-      let field_value: string = rmc_value.replace(field_key + ",", "").trim();
-      await gps_sentence.decode_rmc(field_value);
+    
+    if(rmc_value !== undefined){  
+        let field_key: string = rmc_value.split(",")[0].trim();
+        let field_value: string = rmc_value.replace(field_key + ",", "").trim();
+        await gps_sentence.decode_rmc(field_value);
 
     }else{//se o device não enviar a sentença GNRMC vou executar este bloco
         const location_functions = new location_apis();
@@ -49,7 +49,7 @@ import { gps_sentences } from "../mqtt/gps_sentences";
           gps_sentence.new_variable_to_be_inserted.metadata.mac_lon = mac_coordinates.lng;
           gps_sentence.new_variable_to_be_inserted.metadata.mac_link = map_link + mac_coordinates.lat + "," + mac_coordinates.lng;
         }
-      
+        
         if(lbs_coordinates.lat != 0 && lbs_coordinates.lng != 0){
           gps_sentence.new_variable_to_be_inserted.metadata.lbs_lat = lbs_coordinates.lat;
           gps_sentence.new_variable_to_be_inserted.metadata.lbs_lon = lbs_coordinates.lng;
@@ -68,22 +68,23 @@ import { gps_sentences } from "../mqtt/gps_sentences";
         gps_sentence.new_variable_to_be_inserted.metadata.link = map_link + coordinates.lat + "," + coordinates.lng;
     };
 
+
     let psti20_value: any | undefined = values_array.find(item => item.includes("psti20"));
     if(psti20_value !== undefined){
-
       let field_key: string = psti20_value.split(",")[0].trim();
       let field_value: string = psti20_value.replace(field_key + ",", "").trim();
       gps_sentence.decode_psti20(field_value);
-
     }
 
     
     
-     if(gps_sentence.new_variable_to_be_inserted.metadata.zda_time){
+    if(gps_sentence.new_variable_to_be_inserted.metadata.zda_time){
       gps_sentence.new_variable_to_be_inserted.time = gps_sentence.new_variable_to_be_inserted.metadata.zda_time.replace(" ", "T").concat("Z");
       delete gps_sentence.new_variable_to_be_inserted.metadata.zda_time;
-      
-    }else if(gps_sentence.new_variable_to_be_inserted.metadata.rtc) { gps_sentence.new_variable_to_be_inserted.time = gps_sentence.new_variable_to_be_inserted.metadata.RTC; }
+    
+    }else if(gps_sentence.new_variable_to_be_inserted.metadata.rtc) {
+       gps_sentence.new_variable_to_be_inserted.time = gps_sentence.new_variable_to_be_inserted.metadata.RTC; 
+    }
  
  
     delete gps_sentence.new_variable_to_be_inserted.metadata.EOF; //clean EOF mark

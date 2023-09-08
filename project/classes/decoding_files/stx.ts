@@ -3,8 +3,7 @@ import { location_apis } from "../Apis/location";
 export class stx_message {
 
 
-  public catch_payload (stu_message: string): string{
-    //This function is catching the hexadecimal message sent by device
+  public catch_payload (stu_message: string): string{ //This function is catching the hexadecimal message sent by device
     let firstTag: number = stu_message.indexOf(">", stu_message.indexOf("<payload"));
     let secondTag: number = stu_message.indexOf("</payload>", firstTag);
 
@@ -27,8 +26,8 @@ export class stx_message {
     let hexadecimal_lat: string = file_content.substring(0, 6);
     let integer_lat: number = parseInt(hexadecimal_lat, 16); //estou convertendo para inteiro um valor hexa, por isso eu coloco o 16 como parâmetro
      
-    let final_lat = integer_lat / 10_000; 
-    let ready_coordinate = cardinal_position === "south"
+    let final_lat: number = integer_lat / 10_000; 
+    let ready_coordinate: string = cardinal_position === "south"
                                                       ? "-" + String(final_lat.toFixed(8))
                                                       : String(final_lat.toFixed(8));
 
@@ -43,8 +42,8 @@ export class stx_message {
     let hexadecimal_lng: string = file_content.substring(6, 12);
     let integer_lng: number = parseInt(hexadecimal_lng, 16);
 
-    let final_lng = integer_lng / 10_000; 
-    let ready_coordinate = cardinal_position === "weast"
+    let final_lng: number = integer_lng / 10_000; 
+    let ready_coordinate: string = cardinal_position === "weast"
                                                      ? "-" + String(final_lng.toFixed(8))
                                                      : String(final_lng.toFixed(8));
 
@@ -57,7 +56,7 @@ export class stx_message {
 
   public decode_binary_values(file_content: string): any{
     let values_object = {cardinal_position_s_n: "", cardinal_position_w_e:"", origin:"", mode:0, battery_change:false, direction:"", lastSPD: 0, jamm:""};
-    let binary = this.hex_2_bin(file_content.substring(12, 14));
+    let binary: string = this.hex_2_bin(file_content.substring(12, 14));
 
     let value_of_each_byte: Array<(byte:string) => void> = [];
     value_of_each_byte[0] =  (byte: string): void => { byte === "0"   ?values_object.cardinal_position_s_n = "south"    :values_object.cardinal_position_s_n = "north"; };
@@ -77,12 +76,12 @@ export class stx_message {
     else if(binary.substring(5) === "111"){ values_object.direction = "NW"}//Noroeste - Northwest
 
 
-    let byte8 = this.hex_2_bin(file_content.substring(14, 16));
+    let byte8: string = this.hex_2_bin(file_content.substring(14, 16));
     if(byte8.substring(0, 1) === "0") { values_object.battery_change = false; }//trocar substring por posição [0]
     else{ values_object.battery_change = true; }
 
 
-    let byte9 = file_content.substring(16, 18);
+    let byte9: string = file_content.substring(16, 18);
     values_object.lastSPD = parseInt(byte9, 16);
 
     if(values_object.mode === 2){ values_object.jamm = "NO JAMMING"; }
