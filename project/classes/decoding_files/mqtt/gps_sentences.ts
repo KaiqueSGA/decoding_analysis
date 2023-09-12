@@ -120,31 +120,22 @@ export class gps_sentences {
     
     
     
-        if(values_array[12] == "N"){//The value in the position 12 will "say" if the coordinates sent by device are correct... If the device send the value "N" the gps value send by device is incorrect, therefore the algorithim is going to catch the coordinates through of another method. 
+        if(values_array[12] == "N"){//The value in the position 12 will "say" if the coordinates sent by device are correct... If the device send the value "N" the gps value sent by device is incorrect, therefore the algorithim is going to catch the coordinates through of another method. 
           
-          if(mac_coordinates.lat === 0  &&  lbs_coordinates.lat === 0){
-             process.kill(process.pid, 'SIGINT'); 
-             return;  
+          if(mac_coordinates.lat !== 0  ||  lbs_coordinates.lat !== 0){
+            let coordinates = mac_coordinates.lat !== 0 ?mac_coordinates :lbs_coordinates;
+            this.coordinates_origin = mac_coordinates.lat !== 0   ?"MAC"  :"LBS"; 
+
+            this.new_variable_to_be_inserted.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
+            this.new_variable_to_be_inserted.metadata.url_pin = {};
+            this.new_variable_to_be_inserted.metadata.url_pin.url = this.mapLINK + coordinates.lat + "," + coordinates.lng;
+            this.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
+            this.new_variable_to_be_inserted.metadata.link = this.mapLINK + coordinates.lat + "," + coordinates.lng;
+            this.new_variable_to_be_inserted.metadata.lat = coordinates.lat; 
+            this.new_variable_to_be_inserted.metadata.lon = coordinates.lng; 
+            this.new_variable_to_be_inserted.metadata.address = await location_functions.get_address_through_coordinates(coordinates.lat, coordinates.lng);
           }
-    
-          let coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
-          this.coordinates_origin = mac_coordinates.lat != 0   ?"MAC"  :"LBS";
-    
-           if(coordinates.lat === 0 || coordinates.lng === 0){//remove this code
-            let latitude: string = values_array[3];
-            let longitude: string = values_array[5];
-    
-            let tmpNS: string = values_array[4];
-            var tmpEW: string = values_array[6];
-    
-            latitude = this.transform_raw_data_into_coordinates(latitude);
-            if(tmpNS == "S") { coordinates.lat = "-" + latitude; }
-        
-            longitude = this.transform_raw_data_into_coordinates(longitude);
-            if(tmpEW == "W") { coordinates.lng = "-" + longitude; }
-          } 
-    
-    
+
           let knot: number = 1.852;
           let speed: string = (parseInt(values_array[7]) * knot).toFixed(1);
           let cog: number = parseInt(values_array[8]);//Course over the ground. The value of this variable varies from (000.0 ~ 359.9) in degrees. From this value, we can get the cardinal_direction
@@ -152,22 +143,12 @@ export class gps_sentences {
           let direction: string = this.get_cardinal_direction(cog);
           let tmpIEC: string = values_array[13];
     
-          this.new_variable_to_be_inserted.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
-          this.new_variable_to_be_inserted.metadata.url_pin = {};
-          this.new_variable_to_be_inserted.metadata.url_pin.url = this.mapLINK + coordinates.lat + "," + coordinates.lng;
-          this.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
-          this.new_variable_to_be_inserted.metadata.link = this.mapLINK + coordinates.lat + "," + coordinates.lng;
-          this.new_variable_to_be_inserted.metadata.lat = coordinates.lat; 
-          this.new_variable_to_be_inserted.metadata.lon = coordinates.lng; 
           this.new_variable_to_be_inserted.metadata.spd = speed; 
           this.new_variable_to_be_inserted.metadata.cog = cog;
           this.new_variable_to_be_inserted.metadata.direction = direction;
           this.new_variable_to_be_inserted.metadata.IEC = tmpIEC;
-          this.new_variable_to_be_inserted.metadata.address = await location_functions.get_address_through_coordinates(coordinates.lat, coordinates.lng);
-    
+          
           return;
-
-
         }else{
 
           let north_south: string = values_array[4];

@@ -56,16 +56,15 @@ import { gps_sentences } from "../mqtt/gps_sentences";
           gps_sentence.new_variable_to_be_inserted.metadata.lbs_link = map_link + lbs_coordinates.lat + "," + lbs_coordinates.lng;
         }
 
-        if(mac_coordinates.lat === 0  &&  lbs_coordinates.lat === 0){ process.kill(process.pid, 'SIGINT'); return;  }
-
-        let coordinates = mac_coordinates.lat != 0 ?mac_coordinates :lbs_coordinates;
-
-        gps_sentence.new_variable_to_be_inserted.metadata.origin = mac_coordinates.lat != 0   ?"MAC"  :"LBS";
-        gps_sentence.new_variable_to_be_inserted.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
-        gps_sentence.new_variable_to_be_inserted.metadata.url_pin = {};
-        gps_sentence.new_variable_to_be_inserted.metadata.url_pin.url = map_link + coordinates.lat + "," + coordinates.lng;
-        gps_sentence.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
-        gps_sentence.new_variable_to_be_inserted.metadata.link = map_link + coordinates.lat + "," + coordinates.lng;
+        if(mac_coordinates.lat !== 0  ||  lbs_coordinates.lat !== 0){ 
+          let coordinates = mac_coordinates.lat !== 0 ?mac_coordinates :lbs_coordinates;
+          gps_sentence.new_variable_to_be_inserted.metadata.origin = mac_coordinates.lat !== 0   ?"MAC"  :"LBS";
+          gps_sentence.new_variable_to_be_inserted.location = { type:"Point", coordinates:[ coordinates.lng, coordinates.lat]};
+          gps_sentence.new_variable_to_be_inserted.metadata.url_pin = {};
+          gps_sentence.new_variable_to_be_inserted.metadata.url_pin.url = map_link + coordinates.lat + "," + coordinates.lng;
+          gps_sentence.new_variable_to_be_inserted.metadata.url_pin.alias = "Open map at " + coordinates.lat + "," + coordinates.lng;
+          gps_sentence.new_variable_to_be_inserted.metadata.link = map_link + coordinates.lat + "," + coordinates.lng;
+        }  
     };
 
 

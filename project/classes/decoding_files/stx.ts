@@ -96,6 +96,7 @@ export class stx_message {
 
   async decode(file_content: string, esn_value: string, unixtime: Date) {
     const location_functions = new location_apis();
+    let decoded_object: any = { };
 
     let payload: string = this.catch_payload(file_content);
     let bin_values_decoded: any = this.decode_binary_values(payload);
@@ -103,39 +104,36 @@ export class stx_message {
     let latitude: number = Number(this.decode_lat(payload, bin_values_decoded.cardinal_position_s_n));
     let longitude: number = Number(this.decode_lng(payload, bin_values_decoded.cardinal_position_w_e));
     
-    if(latitude === 0 || longitude === 0) { return undefined };
 
-    return {
+    decoded_object.variable = "ESN";
+    decoded_object.value = esn_value;
+    decoded_object.time = unixtime;
+    decoded_object.metadata = {};
 
-      variable: "ESN",
-      value: esn_value,
-      time: unixtime,
-      location: { type: "Point", coordinates: [longitude, latitude] },
-      metadata: {
-        lat: latitude,
-        lon: longitude,
-        spd: bin_values_decoded.lastSPD,
-        direction: bin_values_decoded.direction,
-
-        battery_volts: (bin_values_decoded.battery_change === true ?"low"  :"normal"),
-
-        mode: bin_values_decoded.mode,
-        jamm: bin_values_decoded.jamm,
-        media: "STX",
-        origin: bin_values_decoded.origin,
-        xml: file_content,
-        url_pin: {
-          url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
-          alias: `Open map at ${latitude},${longitude}`
-        },
-        link: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
-        address: await location_functions.get_address_through_coordinates(latitude, longitude),
-        cops:"SGA SAT",
-        dr_cal: "null",
-        gyro_cal: "null"
-      }
-
+    if(latitude !== 0 && longitude !== 0) {
+      decoded_object.location = { type: "Point", coordinates: [longitude, latitude] };
+      decoded_object.metadata.lat = latitude;
+      decoded_object.metadata.lon = longitude;
+      decoded_object.metadata.url_pin = { url: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, alias: `Open map at ${latitude},${longitude}`};
+      decoded_object.metadata.link = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+      decoded_object.metadata.address = await location_functions.get_address_through_coordinates(latitude, longitude); 
     };
+
+    
+    decoded_object.metadata.spd = bin_values_decoded.lastSPD;
+    decoded_object.metadata.direction = bin_values_decoded.direction;
+    decoded_object.metadata.battery_volts = (bin_values_decoded.battery_change === true ?"low"  :"normal");
+    decoded_object.metadata.mode = bin_values_decoded.mode;
+    decoded_object.metadata.jamm = bin_values_decoded.jamm;
+    decoded_object.metadata.media = "STX";
+    decoded_object.metadata.origin = bin_values_decoded.origin;
+    decoded_object.metadata.xml = file_content;
+    decoded_object.metadata.cops = "SGA SAT",
+    decoded_object.metadata.dr_cal = "null",
+    decoded_object.metadata.gyro_cal = "null"
+  
+    return decoded_object;
+    
 
   }
 };
